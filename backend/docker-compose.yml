@@ -1,8 +1,8 @@
-version: '3.9'
-
 services:
   db:
-    image: pgvector/pgvector:pg16
+    build:
+      context: ./infra
+      dockerfile: Dockerfile
     container_name: askme_db
     restart: unless-stopped
     environment:
