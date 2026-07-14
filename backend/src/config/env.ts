@@ -13,6 +13,18 @@ const envSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().default(100),
   GOOGLE_PLACES_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+
+  // Auth social (Google Sign-In) — Fase de monetização
+  GOOGLE_CLIENT_ID: z.string().optional(),
+
+  // Stripe (assinatura mensal, cartão de crédito)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_ID_MONTHLY: z.string().optional(),
+  // URLs para onde o Stripe Checkout redireciona após sucesso/cancelamento.
+  // Em produção, apontam para um deep link do app (ex: askme://subscription/success).
+  STRIPE_CHECKOUT_SUCCESS_URL: z.string().default('askme://subscription/success'),
+  STRIPE_CHECKOUT_CANCEL_URL: z.string().default('askme://subscription/cancel'),
 });
 
 const parsed = envSchema.safeParse(process.env);

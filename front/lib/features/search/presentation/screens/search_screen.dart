@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../ai_search/presentation/screens/ai_search_screen.dart';
 import '../../../place_detail/presentation/screens/place_detail_screen.dart';
+import '../../../subscription/presentation/screens/subscription_screen.dart';
 import '../state/search_view_model.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/place_card.dart';
@@ -32,6 +33,17 @@ class _SearchScreenState extends State<SearchScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Ask.me 👋'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.workspace_premium_rounded),
+            tooltip: 'Assinatura',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+              );
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppColors.primary,

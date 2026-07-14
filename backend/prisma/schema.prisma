@@ -20,6 +20,55 @@ datasource db {
   extensions = [postgis, pgvector(map: "vector")]
 }
 
+// Usuário autenticado via Google Sign-In (OAuth). Login é opcional no MVP —
+// só é exigido no fluxo de assinatura (ver Subscription).
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  avatarUrl     String?  @map("avatar_url")
+  googleId      String   @unique @map("google_id")
+
+  subscription  Subscription?
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt      @map("updated_at")
+
+  @@map("users")
+}
+
+enum SubscriptionStatus {
+  incomplete
+  active
+  past_due
+  canceled
+  unpaid
+}
+
+// Assinatura mensal via Stripe (R$20,00/mês). MVP cobre apenas cartão de
+// crédito (Stripe Subscriptions nativo, renovação automática). Pix fica
+// registrado como dívida técnica: Stripe não suporta débito automático
+// recorrente via Pix — exigiria gerar uma cobrança nova por ciclo
+// (collection_method: send_invoice), fluxo com fricção manual mensal.
+model Subscription {
+  id                    String             @id @default(cuid())
+  userId                String             @unique @map("user_id")
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  stripeCustomerId      String             @unique @map("stripe_customer_id")
+  stripeSubscriptionId  String?            @unique @map("stripe_subscription_id")
+  stripePriceId         String?            @map("stripe_price_id")
+
+  status                SubscriptionStatus @default(incomplete)
+  currentPeriodEnd      DateTime?          @map("current_period_end")
+  cancelAtPeriodEnd     Boolean            @default(false) @map("cancel_at_period_end")
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt      @map("updated_at")
+
+  @@map("subscriptions")
+}
+
 model Category {
   id     Int     @id @default(autoincrement())
   slug   String  @unique // ex: "restaurante", "farmacia", "pet-shop"

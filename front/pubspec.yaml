@@ -48,8 +48,14 @@ dependencies:
   # Formatting distances/dates
   intl: ^0.20.1
 
-  # URL launching (phone, website)
+  # URL launching (phone, website, Stripe Checkout)
   url_launcher: ^6.3.1
+
+  # Autenticação social (Google Sign-In)
+  google_sign_in: ^6.2.2
+
+  # Armazenamento seguro do JWT da aplicação
+  flutter_secure_storage: ^9.2.2
 
 dev_dependencies:
   flutter_test:

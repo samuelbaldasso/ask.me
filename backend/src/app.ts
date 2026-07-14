@@ -5,12 +5,23 @@ import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import router from './routes';
 import { errorHandler } from './middleware/errorHandler';
+import { stripeWebhookController } from './controllers/subscriptionController';
 
 const app: Application = express();
 
 // ── Segurança e parsing ───────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors());
+
+// Webhook da Stripe precisa do corpo bruto (raw) para validar a assinatura
+// HMAC — deve ser registrado ANTES do express.json() global, que já teria
+// parseado/consumido o body como JSON.
+app.post(
+  '/api/v1/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhookController,
+);
+
 app.use(express.json({ limit: '256kb' }));
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
