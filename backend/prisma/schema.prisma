@@ -30,15 +30,19 @@ model Category {
 }
 
 model Place {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  phone       String?
-  website     String?
-  address     String
-  city        String
-  state       String   @default("SP")
-  zipCode     String?  @map("zip_code")
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  phone         String?
+  website       String?
+  address       String
+  city          String
+  state         String   @default("SP")
+  zipCode       String?  @map("zip_code")
+  // Preenchido quando o place é descoberto via Google Places Nearby Search
+  // (src/db/discoverPlaces.ts) — usado para upsert idempotente entre execuções.
+  // null para places cadastrados manualmente (seeds).
+  googlePlaceId String?  @unique @map("google_place_id")
 
   // Coordenadas armazenadas explicitamente para leitura simples via Prisma ORM
   lat         Float

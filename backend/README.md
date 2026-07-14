@@ -45,11 +45,25 @@ npm run db:migrate
 # Aplica schema Prisma + extensões PostGIS via SQL customizado
 ```
 
-### 5. Seed (desenvolvimento)
+### 5. Dados
+
+Seed fictício (desenvolvimento/testes):
 
 ```bash
 npm run db:seed
 ```
+
+Dados reais por geolocalização (requer `GOOGLE_PLACES_API_KEY` no `.env`):
+
+```bash
+npm run places:discover -- --lat=-22.3711 --lng=-41.7867 --city=Macaé --radius=5000
+npm run places:enrich   # completa telefone/website dos places descobertos
+```
+
+`places:discover` busca estabelecimentos reais via Google Places Nearby Search
+para as categorias do produto (restaurante, farmácia, pet-shop, supermercado)
+e faz upsert idempotente por `google_place_id` — pode ser executado de novo
+com segurança para atualizar nome/endereço/coordenadas.
 
 ### 6. Rodar em desenvolvimento
 

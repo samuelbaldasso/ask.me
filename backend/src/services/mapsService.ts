@@ -19,6 +19,70 @@ export interface PlaceEnrichment {
   formattedAddress: string | null;
 }
 
+export interface NearbyPlace {
+  googlePlaceId: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Busca estabelecimentos reais por geolocalização via Google Places
+ * Nearby Search — fonte dos dados que populam o banco (src/db/discoverPlaces.ts).
+ *
+ * Paginação: a API do Google retorna no máximo 20 resultados por página e
+ * exige aguardar a `next_page_token` "ativar" antes de ser usada — para o
+ * MVP buscamos só a primeira página (20 lugares por execução), suficiente
+ * para validar uma região sem custo/latência de paginação encadeada.
+ */
+export async function nearbySearch(
+  lat: number,
+  lng: number,
+  radiusMeters: number,
+  googleType: string,
+): Promise<NearbyPlace[]> {
+  if (!env.GOOGLE_PLACES_API_KEY) {
+    return [];
+  }
+
+  const url = new URL(`${GOOGLE_PLACES_BASE_URL}/nearbysearch/json`);
+  url.searchParams.set('location', `${lat},${lng}`);
+  url.searchParams.set('radius', String(radiusMeters));
+  url.searchParams.set('type', googleType);
+  url.searchParams.set('key', env.GOOGLE_PLACES_API_KEY);
+
+  try {
+    const res = await fetchWithTimeout(url.toString());
+    const body = (await res.json()) as {
+      status: string;
+      results?: Array<{
+        place_id: string;
+        name: string;
+        vicinity?: string;
+        geometry?: { location?: { lat: number; lng: number } };
+      }>;
+    };
+
+    if (body.status !== 'OK' && body.status !== 'ZERO_RESULTS') {
+      throw new Error(`Google Places API retornou status ${body.status}`);
+    }
+
+    return (body.results ?? [])
+      .filter((r) => r.geometry?.location)
+      .map((r) => ({
+        googlePlaceId: r.place_id,
+        name: r.name,
+        address: r.vicinity ?? '',
+        lat: r.geometry!.location!.lat,
+        lng: r.geometry!.location!.lng,
+      }));
+  } catch (err) {
+    console.error('[mapsService] Falha na busca por proximidade:', (err as Error).message);
+    return [];
+  }
+}
+
 export async function enrichPlaceFromGoogle(
   name: string,
   city: string,
