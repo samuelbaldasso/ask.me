@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../state/search_view_model.dart';
 
 class FilterBar extends StatelessWidget {
@@ -19,40 +20,46 @@ class FilterBar extends StatelessWidget {
           height: 44,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              ChoiceChip(
-                label: const Text('Todas categorias'),
+              _CategoryChip(
+                label: 'Todas',
+                icon: Icons.apps_rounded,
                 selected: filters.categorySlug == null,
                 onSelected: (_) => vm.updateCategory(null),
               ),
               const SizedBox(width: 8),
               ...SearchViewModel.availableCategories.map((c) {
-                final selected = filters.categorySlug == c['slug'];
+                final slug = c['slug']!;
+                final selected = filters.categorySlug == slug;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(c['label']!),
+                  child: _CategoryChip(
+                    label: c['label']!,
+                    icon: CategoryStyle.forSlug(slug).icon,
                     selected: selected,
-                    onSelected: (_) => vm.updateCategory(c['slug']),
+                    onSelected: (_) => vm.updateCategory(slug),
                   ),
                 );
               }),
             ],
           ),
         ),
+        const SizedBox(height: 8),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Wrap(
             spacing: 8,
             children: [
-              FilterChip(
-                label: const Text('Aberto agora'),
+              _CategoryChip(
+                label: 'Aberto agora',
+                icon: Icons.schedule_rounded,
                 selected: filters.openNow,
                 onSelected: vm.toggleOpenNow,
               ),
-              FilterChip(
-                label: const Text('Aceita pets'),
+              _CategoryChip(
+                label: 'Aceita pets',
+                icon: Icons.pets_rounded,
                 selected: filters.acceptsPets,
                 onSelected: vm.toggleAcceptsPets,
               ),
@@ -60,6 +67,39 @@ class FilterBar extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
+
+  const _CategoryChip({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      avatar: Icon(icon, size: 16, color: selected ? Colors.white : AppColors.primary),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: selected ? Colors.white : const Color(0xFF3A2E5C),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      selected: selected,
+      onSelected: onSelected,
+      backgroundColor: AppColors.surfaceDim,
+      selectedColor: AppColors.primary,
+      showCheckmark: false,
     );
   }
 }

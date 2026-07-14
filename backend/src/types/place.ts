@@ -44,3 +44,9 @@ export interface PaginatedResult<T> {
   limit: number;
   offset: number;
 }
+
+export interface NlSearchResult {
+  answer: string;
+  usedAi: boolean;
+  results: PaginatedResult<PlaceResult>;
+}
