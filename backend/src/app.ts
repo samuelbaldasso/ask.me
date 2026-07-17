@@ -9,6 +9,11 @@ import { stripeWebhookController } from './controllers/subscriptionController';
 
 const app: Application = express();
 
+// Confia apenas no primeiro hop (proxy de borda do Railway) para resolver o
+// IP real do cliente via X-Forwarded-For — necessário para o rate limiting
+// funcionar corretamente atrás de um proxy reverso.
+app.set('trust proxy', 1);
+
 // ── Segurança e parsing ───────────────────────────────────────────────────────
 app.use(helmet());
 app.use(cors());

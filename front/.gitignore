@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Release signing — NUNCA versionar. Perder o keystore = impossível atualizar
+# o app publicado na Play Store com o mesmo applicationId.
+/android/key.properties
+/android/*.keystore
+/android/*.jks
