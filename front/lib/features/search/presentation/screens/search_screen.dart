@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../account/presentation/widgets/profile_drawer.dart';
 import '../../../ai_search/presentation/screens/ai_search_screen.dart';
 import '../../../place_detail/presentation/screens/place_detail_screen.dart';
-import '../../../subscription/presentation/screens/subscription_screen.dart';
 import '../state/search_view_model.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/place_card.dart';
@@ -31,17 +31,16 @@ class _SearchScreenState extends State<SearchScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      endDrawer: const ProfileDrawer(),
       appBar: AppBar(
         title: const Text('Ask.me 👋'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.workspace_premium_rounded),
-            tooltip: 'Assinatura',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-              );
-            },
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.person_rounded),
+              tooltip: 'Perfil',
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
+            ),
           ),
         ],
       ),

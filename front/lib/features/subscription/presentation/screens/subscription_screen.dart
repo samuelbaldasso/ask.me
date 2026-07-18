@@ -151,6 +151,28 @@ class _ActivePlanView extends StatelessWidget {
                 style: TextStyle(color: Colors.orange),
               ),
             ],
+            const SizedBox(height: 24),
+            if (vm.errorMessage != null) ...[
+              Text(
+                vm.errorMessage!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+            ],
+            OutlinedButton.icon(
+              onPressed: vm.status == SubscriptionViewStatus.openingPortal
+                  ? null
+                  : () => vm.openBillingPortal(),
+              icon: vm.status == SubscriptionViewStatus.openingPortal
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.settings_rounded),
+              label: const Text('Gerenciar assinatura'),
+            ),
           ],
         ),
       ),

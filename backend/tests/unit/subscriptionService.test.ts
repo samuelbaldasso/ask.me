@@ -5,6 +5,7 @@ const stripeInstanceMock = {
   checkout: { sessions: { create: jest.fn() } },
   subscriptions: { retrieve: jest.fn() },
   webhooks: { constructEvent: jest.fn() },
+  billingPortal: { sessions: { create: jest.fn() } },
 };
 
 jest.mock('stripe', () => jest.fn().mockImplementation(() => stripeInstanceMock));
@@ -19,6 +20,7 @@ jest.mock('../../src/db/prisma', () => ({
 import { prisma } from '../../src/db/prisma';
 import {
   createCheckoutSession,
+  createBillingPortalSession,
   getSubscriptionStatus,
   handleWebhookEvent,
   SubscriptionServiceError,
@@ -88,6 +90,32 @@ describe('subscriptionService', () => {
       expect(stripeInstanceMock.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({ customer: 'cus_existing' }),
       );
+    });
+  });
+
+  describe('createBillingPortalSession', () => {
+    it('lança 404 quando o usuário não tem assinatura', async () => {
+      (prisma.subscription.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(createBillingPortalSession('user-1')).rejects.toMatchObject({
+        statusCode: 404,
+      } satisfies Partial<SubscriptionServiceError>);
+    });
+
+    it('cria a portal session com o customer existente', async () => {
+      (prisma.subscription.findUnique as jest.Mock).mockResolvedValue({
+        stripeCustomerId: 'cus_existing',
+      });
+      stripeInstanceMock.billingPortal.sessions.create.mockResolvedValue({
+        url: 'https://billing.stripe.com/session_abc',
+      });
+
+      const result = await createBillingPortalSession('user-1');
+
+      expect(stripeInstanceMock.billingPortal.sessions.create).toHaveBeenCalledWith(
+        expect.objectContaining({ customer: 'cus_existing' }),
+      );
+      expect(result.url).toBe('https://billing.stripe.com/session_abc');
     });
   });
 

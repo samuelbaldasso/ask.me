@@ -25,6 +25,9 @@ const envSchema = z.object({
   // Em produção, apontam para um deep link do app (ex: askme://subscription/success).
   STRIPE_CHECKOUT_SUCCESS_URL: z.string().default('askme://subscription/success'),
   STRIPE_CHECKOUT_CANCEL_URL: z.string().default('askme://subscription/cancel'),
+  // Para onde o Stripe Billing Portal (gerenciar/cancelar assinatura) retorna
+  // o usuário depois que ele fecha o portal.
+  STRIPE_BILLING_PORTAL_RETURN_URL: z.string().default('askme://subscription/return'),
 });
 
 const parsed = envSchema.safeParse(process.env);

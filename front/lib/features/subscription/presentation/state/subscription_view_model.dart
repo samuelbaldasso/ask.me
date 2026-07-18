@@ -4,7 +4,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/models/subscription_status.dart';
 import '../../data/subscription_repository.dart';
 
-enum SubscriptionViewStatus { idle, loadingStatus, openingCheckout, loaded, error }
+enum SubscriptionViewStatus {
+  idle,
+  loadingStatus,
+  openingCheckout,
+  openingPortal,
+  loaded,
+  error,
+}
 
 /// Assinatura via cartão de crédito (Stripe Subscriptions, renovação
 /// automática). Pix não é suportado nesta versão: Stripe não faz débito
@@ -50,6 +57,30 @@ class SubscriptionViewModel extends ChangeNotifier {
 
       if (!launched) {
         throw Exception('Não foi possível abrir a página de pagamento.');
+      }
+
+      status = SubscriptionViewStatus.idle;
+    } catch (e) {
+      errorMessage = e.toString();
+      status = SubscriptionViewStatus.error;
+    } finally {
+      notifyListeners();
+    }
+  }
+
+  /// Abre o Stripe Billing Portal no navegador externo, onde o usuário pode
+  /// cancelar a assinatura, trocar cartão e ver o histórico de faturas.
+  Future<void> openBillingPortal() async {
+    status = SubscriptionViewStatus.openingPortal;
+    errorMessage = null;
+    notifyListeners();
+
+    try {
+      final url = await _repository.createBillingPortalUrl();
+      final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+
+      if (!launched) {
+        throw Exception('Não foi possível abrir a página de gerenciamento da assinatura.');
       }
 
       status = SubscriptionViewStatus.idle;

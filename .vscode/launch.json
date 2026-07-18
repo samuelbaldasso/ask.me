@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ask.me (debug)",
+      "request": "launch",
+      "type": "dart",
+      "program": "front/lib/main.dart",
+      "cwd": "front",
+      "args": [
+        "--dart-define=GOOGLE_SERVER_CLIENT_ID=530541760185-j44il3m3bmem54ddo7hcd8hiiovtkqu4.apps.googleusercontent.com"
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import {
   createCheckoutSession,
+  createBillingPortalSession,
   getSubscriptionStatus,
   constructWebhookEvent,
   handleWebhookEvent,
@@ -16,6 +17,19 @@ export async function createCheckoutSessionController(
   try {
     // authenticate() garante req.user presente nesta rota
     const result = await createCheckoutSession(req.user!.sub);
+    res.status(StatusCodes.OK).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createBillingPortalSessionController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const result = await createBillingPortalSession(req.user!.sub);
     res.status(StatusCodes.OK).json(result);
   } catch (err) {
     next(err);

@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import app from '../../src/app';
 import { env } from '../../src/config/env';
 
+const HAS_TEST_DB = process.env.DATABASE_URL?.includes('test');
+const itWithDb = HAS_TEST_DB ? it : it.skip;
+
 describe('rotas de assinatura', () => {
   describe('POST /api/v1/subscriptions/checkout', () => {
     it('retorna 401 sem token', async () => {
@@ -22,6 +25,23 @@ describe('rotas de assinatura', () => {
     it('retorna 401 sem token', async () => {
       const res = await request(app).get('/api/v1/subscriptions/me');
       expect(res.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/v1/subscriptions/portal', () => {
+    it('retorna 401 sem token', async () => {
+      const res = await request(app).post('/api/v1/subscriptions/portal');
+      expect(res.status).toBe(401);
+    });
+
+    itWithDb('retorna 404 quando o usuário não tem assinatura', async () => {
+      const token = jwt.sign({ sub: 'user-fake-id' }, env.JWT_SECRET, { expiresIn: '1h' });
+
+      const res = await request(app)
+        .post('/api/v1/subscriptions/portal')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(404);
     });
   });
 

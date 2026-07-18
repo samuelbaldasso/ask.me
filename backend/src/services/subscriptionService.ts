@@ -99,6 +99,28 @@ export async function createCheckoutSession(userId: string): Promise<{ url: stri
   return { url: session.url };
 }
 
+/**
+ * Cria uma Stripe Billing Portal session para o usuário gerenciar a própria
+ * assinatura (cancelar, trocar cartão, ver faturas) fora do app. Evita
+ * termos que construir/manter essas telas nós mesmos no MVP.
+ */
+export async function createBillingPortalSession(userId: string): Promise<{ url: string }> {
+  const existing = await prisma.subscription.findUnique({ where: { userId } });
+
+  if (!existing) {
+    throw new SubscriptionServiceError('Usuário não possui assinatura', 404);
+  }
+
+  const stripe = getStripeClient();
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: existing.stripeCustomerId,
+    return_url: env.STRIPE_BILLING_PORTAL_RETURN_URL,
+  });
+
+  return { url: session.url };
+}
+
 export async function getSubscriptionStatus(userId: string) {
   const subscription = await prisma.subscription.findUnique({ where: { userId } });
 

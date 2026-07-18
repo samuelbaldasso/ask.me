@@ -28,4 +28,15 @@ class SubscriptionRepository {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// Cria uma Stripe Billing Portal session (cancelar, trocar cartão, ver
+  /// faturas) e retorna a URL hospedada pela Stripe para abrir no navegador.
+  Future<String> createBillingPortalUrl() async {
+    try {
+      final response = await _apiClient.dio.post('/subscriptions/portal');
+      return (response.data as Map<String, dynamic>)['url'] as String;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }
