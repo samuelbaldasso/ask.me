@@ -1,5 +1,5 @@
 import { prisma } from '../db/prisma';
-import type { SearchFilters, PlaceResult, PaginatedResult } from '../types/place';
+import type { SearchFilters, PlaceResult, PaginatedResult, GeoPoint } from '../types/place';
 import { isOpenNow } from '../utils/schedule';
 
 const DEFAULT_RADIUS_METERS = 5_000;
@@ -121,6 +121,58 @@ export async function searchPlaces(
     limit,
     offset,
   };
+}
+
+/**
+ * Busca places específicos (por id) com distância a partir de um ponto de
+ * referência — usado pela tela de favoritos, que não tem um raio de busca,
+ * apenas uma lista fixa de ids já favoritados pelo usuário.
+ */
+export async function getPlacesByIds(
+  placeIds: string[],
+  origin: GeoPoint,
+): Promise<PlaceResult[]> {
+  if (placeIds.length === 0) return [];
+
+  const rows = await prisma.$queryRawUnsafe<RawPlaceRow[]>(
+    `
+    SELECT
+      p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,
+      p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,
+      c.slug AS category_slug, c.label AS category_label,
+      ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters
+    FROM places p
+    JOIN categories c ON c.id = p.category_id
+    WHERE p.id = ANY($3) AND p.is_active = true
+    ORDER BY distance_meters ASC
+    `,
+    origin.lat,
+    origin.lng,
+    placeIds,
+  );
+
+  const hoursMap = await fetchOpeningHoursMap(rows.map((r) => r.id));
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    address: row.address,
+    city: row.city,
+    lat: row.lat,
+    lng: row.lng,
+    distanceMeters: Math.round(Number(row.distance_meters)),
+    category: {
+      slug: row.category_slug,
+      label: row.category_label,
+    },
+    acceptsPets: row.accepts_pets,
+    acceptsCards: row.accepts_cards,
+    hasParking: row.has_parking,
+    phone: row.phone,
+    website: row.website,
+    isOpenNow: (hoursMap[row.id] ?? []).length > 0 ? isOpenNow(hoursMap[row.id]) : null,
+  }));
 }
 
 // ---------------------------------------------------------------------------

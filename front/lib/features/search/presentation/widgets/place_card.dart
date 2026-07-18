@@ -6,8 +6,16 @@ import '../../../../core/theme/app_theme.dart';
 class PlaceCard extends StatelessWidget {
   final Place place;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback? onToggleFavorite;
 
-  const PlaceCard({super.key, required this.place, required this.onTap});
+  const PlaceCard({
+    super.key,
+    required this.place,
+    required this.onTap,
+    this.isFavorite = false,
+    this.onToggleFavorite,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +79,21 @@ class PlaceCard extends StatelessWidget {
                               color: AppColors.primary,
                             ),
                           ),
+                          if (onToggleFavorite != null) ...[
+                            const SizedBox(width: 4),
+                            InkWell(
+                              onTap: onToggleFavorite,
+                              borderRadius: BorderRadius.circular(20),
+                              child: Padding(
+                                padding: const EdgeInsets.all(4),
+                                child: Icon(
+                                  isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                  size: 20,
+                                  color: isFavorite ? AppColors.secondary : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 3),

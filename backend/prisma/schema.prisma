@@ -30,6 +30,7 @@ model User {
   googleId      String   @unique @map("google_id")
 
   subscription  Subscription?
+  favorites     Favorite[]
 
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt      @map("updated_at")
@@ -104,6 +105,7 @@ model Place {
 
   hours       OpeningHours[]
   attributes  PlaceAttribute[]
+  favoritedBy Favorite[]
 
   acceptsPets   Boolean @default(false) @map("accepts_pets")
   acceptsCards  Boolean @default(true)  @map("accepts_cards")
@@ -131,6 +133,22 @@ model OpeningHours {
 
   @@unique([placeId, dayOfWeek])
   @@map("opening_hours")
+}
+
+// Lugares salvos/favoritados por um usuário — feature de retenção do MVP.
+// Requer login (ao contrário da busca, que é livre), pois é sempre
+// associado a um usuário.
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  placeId   String   @map("place_id")
+  place     Place    @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, placeId])
+  @@map("favorites")
 }
 
 // Atributos livres para extensibilidade futura (ex: "wifi", "drive-thru")

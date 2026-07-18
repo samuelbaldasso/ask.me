@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../account/presentation/screens/login_screen.dart';
+import '../../../account/presentation/state/auth_view_model.dart';
 import '../../../account/presentation/widgets/profile_drawer.dart';
 import '../../../ai_search/presentation/screens/ai_search_screen.dart';
+import '../../../favorites/presentation/state/favorites_view_model.dart';
 import '../../../place_detail/presentation/screens/place_detail_screen.dart';
+import '../../../subscription/presentation/screens/subscription_screen.dart';
+import '../../../subscription/presentation/state/subscription_view_model.dart';
 import '../state/search_view_model.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/place_card.dart';
@@ -20,9 +25,42 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<SearchViewModel>().loadInitial();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<SearchViewModel>().loadInitial();
+      if (!mounted) return;
+
+      final filters = context.read<SearchViewModel>().filters;
+      if (filters != null && context.read<AuthViewModel>().isAuthenticated) {
+        context.read<FavoritesViewModel>().load(filters.lat, filters.lng);
+      }
     });
+  }
+
+  void _openAiSearch() {
+    final auth = context.read<AuthViewModel>();
+    final subscription = context.read<SubscriptionViewModel>();
+
+    if (!auth.isAuthenticated || !subscription.isActive) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+      );
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const AiSearchScreen()),
+    );
+  }
+
+  void _toggleFavorite(String placeId) {
+    if (!context.read<AuthViewModel>().isAuthenticated) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
+
+    context.read<FavoritesViewModel>().toggle(placeId);
   }
 
   @override
@@ -49,11 +87,7 @@ class _SearchScreenState extends State<SearchScreen> {
         foregroundColor: Colors.white,
         icon: const Icon(Icons.auto_awesome_rounded),
         label: const Text('Pergunte à IA'),
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const AiSearchScreen()),
-          );
-        },
+        onPressed: _openAiSearch,
       ),
       body: Container(
         decoration: const BoxDecoration(gradient: AppColors.heroGradient),
@@ -170,6 +204,8 @@ class _SearchScreenState extends State<SearchScreen> {
       );
     }
 
+    final favorites = context.watch<FavoritesViewModel>();
+
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: vm.retry,
@@ -180,6 +216,8 @@ class _SearchScreenState extends State<SearchScreen> {
           final place = vm.results[index];
           return PlaceCard(
             place: place,
+            isFavorite: favorites.isFavorite(place.id),
+            onToggleFavorite: () => _toggleFavorite(place.id),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../favorites/presentation/screens/favorites_screen.dart';
 import '../../../subscription/presentation/screens/subscription_screen.dart';
+import '../screens/login_screen.dart';
 import '../state/auth_view_model.dart';
 
-/// Drawer de perfil, acessível a partir da SearchScreen. Mostra os dados do
-/// usuário logado (nome/e-mail/avatar vêm do Google) e dá acesso a
-/// assinatura e logout — login e assinatura ativa já são garantidos pelo
-/// AppGate antes de qualquer tela do app aparecer.
+/// Drawer de perfil, acessível a partir da SearchScreen. Login é opcional no
+/// app (só é exigido pelas telas de assinatura/favoritos quando o usuário
+/// tenta usá-las) — por isso o drawer também funciona para quem não está
+/// logado, oferecendo "Entrar" em vez de "Sair".
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
 
@@ -41,7 +43,7 @@ class ProfileDrawer extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          user?.name ?? 'Usuário Ask.me',
+                          user?.name ?? 'Visitante',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
@@ -64,6 +66,17 @@ class ProfileDrawer extends StatelessWidget {
               ),
             ),
             ListTile(
+              leading: const Icon(Icons.favorite_rounded, color: AppColors.primary),
+              title: const Text('Favoritos'),
+              onTap: () {
+                Navigator.of(context).pop();
+                final destination = auth.isAuthenticated
+                    ? const FavoritesScreen()
+                    : const LoginScreen();
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => destination));
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
               title: const Text('Gerenciar assinatura'),
               onTap: () {
@@ -76,11 +89,23 @@ class ProfileDrawer extends StatelessWidget {
             const Spacer(),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.logout_rounded, color: Colors.red),
-              title: const Text('Sair', style: TextStyle(color: Colors.red)),
+              leading: Icon(
+                auth.isAuthenticated ? Icons.logout_rounded : Icons.login_rounded,
+                color: auth.isAuthenticated ? Colors.red : AppColors.primary,
+              ),
+              title: Text(
+                auth.isAuthenticated ? 'Sair' : 'Entrar',
+                style: TextStyle(color: auth.isAuthenticated ? Colors.red : null),
+              ),
               onTap: () {
                 Navigator.of(context).pop();
-                context.read<AuthViewModel>().signOut();
+                if (auth.isAuthenticated) {
+                  context.read<AuthViewModel>().signOut();
+                } else {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  );
+                }
               },
             ),
             const SizedBox(height: 8),

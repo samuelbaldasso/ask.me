@@ -9,6 +9,8 @@ import 'features/account/data/auth_repository.dart';
 import 'features/account/presentation/state/auth_view_model.dart';
 import 'features/ai_search/data/ask_repository.dart';
 import 'features/ai_search/presentation/state/ai_search_view_model.dart';
+import 'features/favorites/data/favorites_repository.dart';
+import 'features/favorites/presentation/state/favorites_view_model.dart';
 import 'features/search/data/places_repository.dart';
 import 'features/search/presentation/state/search_view_model.dart';
 import 'features/subscription/data/subscription_repository.dart';
@@ -66,6 +68,13 @@ class AskMeApp extends StatelessWidget {
           create: (context) => SubscriptionViewModel(context.read<SubscriptionRepository>()),
           update: (context, repository, previous) =>
               previous ?? SubscriptionViewModel(repository),
+        ),
+        ProxyProvider<ApiClient, FavoritesRepository>(
+          update: (_, apiClient, _) => FavoritesRepository(apiClient),
+        ),
+        ChangeNotifierProxyProvider<FavoritesRepository, FavoritesViewModel>(
+          create: (context) => FavoritesViewModel(context.read<FavoritesRepository>()),
+          update: (context, repository, previous) => previous ?? FavoritesViewModel(repository),
         ),
       ],
       child: MaterialApp(

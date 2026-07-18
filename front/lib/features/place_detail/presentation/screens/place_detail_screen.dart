@@ -1,19 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/models/place.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../account/presentation/screens/login_screen.dart';
+import '../../../account/presentation/state/auth_view_model.dart';
+import '../../../favorites/presentation/state/favorites_view_model.dart';
 
 class PlaceDetailScreen extends StatelessWidget {
   final Place place;
 
   const PlaceDetailScreen({super.key, required this.place});
 
+  void _toggleFavorite(BuildContext context) {
+    if (!context.read<AuthViewModel>().isAuthenticated) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
+
+    context.read<FavoritesViewModel>().toggle(place.id);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isOpen = place.isOpenNow;
     final categoryStyle = CategoryStyle.forSlug(place.category.slug);
+    final isFavorite = context.watch<FavoritesViewModel>().isFavorite(place.id);
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -23,6 +39,13 @@ class PlaceDetailScreen extends StatelessWidget {
             expandedHeight: 200,
             pinned: true,
             backgroundColor: AppColors.primary,
+            actions: [
+              IconButton(
+                icon: Icon(isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded),
+                tooltip: 'Favoritar',
+                onPressed: () => _toggleFavorite(context),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: const BoxDecoration(gradient: AppColors.heroGradient),
