@@ -13,7 +13,13 @@ function Badge({ label, color }: { label: string; color: string }) {
   );
 }
 
-export function PlaceCard({ place }: { place: Place }) {
+interface PlaceCardProps {
+  place: Place;
+  isFavorite?: boolean;
+  onToggleFavorite?: (placeId: string) => void;
+}
+
+export function PlaceCard({ place, isFavorite, onToggleFavorite }: PlaceCardProps) {
   const style = categoryStyleForSlug(place.category.slug);
 
   return (
@@ -35,6 +41,21 @@ export function PlaceCard({ place }: { place: Place }) {
           <span className="shrink-0 text-xs font-bold text-primary">
             {distanceLabel(place.distanceMeters)}
           </span>
+          {onToggleFavorite && (
+            <button
+              type="button"
+              aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
+              onClick={(e) => {
+                e.preventDefault();
+                onToggleFavorite(place.id);
+              }}
+              className="shrink-0 text-lg leading-none"
+            >
+              <span aria-hidden style={{ color: isFavorite ? '#FF6B6B' : '#9CA3AF' }}>
+                {isFavorite ? '♥' : '♡'}
+              </span>
+            </button>
+          )}
         </div>
         <p className="truncate text-sm text-[#171123]/60">
           {place.category.label} · {place.address}

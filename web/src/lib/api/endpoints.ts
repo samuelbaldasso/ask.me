@@ -25,8 +25,13 @@ export function loginWithGoogle(
   return apiFetch('/auth/google', { method: 'POST', body: { idToken } });
 }
 
-export function listFavorites(lat: number, lng: number): Promise<Place[]> {
-  return apiFetch<Place[]>('/favorites', { query: { lat: String(lat), lng: String(lng) } });
+export function listFavorites(
+  lat: number,
+  lng: number,
+): Promise<PaginatedResult<Place>> {
+  return apiFetch<PaginatedResult<Place>>('/favorites', {
+    query: { lat: String(lat), lng: String(lng) },
+  });
 }
 
 export function addFavorite(placeId: string): Promise<void> {

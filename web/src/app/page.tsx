@@ -1,10 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { FilterBar } from '@/components/filter-bar';
 import { PlaceCard } from '@/components/place-card';
 import { ApiError } from '@/lib/api/client';
 import { searchPlaces } from '@/lib/api/endpoints';
+import { useAuth } from '@/lib/auth/auth-context';
+import { useFavorites } from '@/lib/favorites/favorites-context';
 import { usePlaceCache } from '@/lib/place-cache';
 import { defaultSearchFilters, type Place, type SearchFilters } from '@/lib/types';
 import { useGeolocation } from '@/lib/use-geolocation';
@@ -14,6 +17,9 @@ type ResultsStatus = 'loading' | 'loaded' | 'empty' | 'error';
 export default function Home() {
   const geo = useGeolocation();
   const placeCache = usePlaceCache();
+  const { isAuthenticated } = useAuth();
+  const favorites = useFavorites();
+  const router = useRouter();
 
   const [filters, setFilters] = useState<SearchFilters | null>(null);
   const [results, setResults] = useState<Place[]>([]);
@@ -24,8 +30,18 @@ export default function Home() {
     if (geo.status === 'ready' && geo.coords) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFilters(defaultSearchFilters(geo.coords.lat, geo.coords.lng));
+      if (isAuthenticated) favorites.load(geo.coords.lat, geo.coords.lng);
     }
-  }, [geo.status, geo.coords]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [geo.status, geo.coords, isAuthenticated]);
+
+  const toggleFavorite = (placeId: string) => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    favorites.toggle(placeId);
+  };
 
   const runSearch = useCallback(
     async (nextFilters: SearchFilters) => {
@@ -70,7 +86,7 @@ export default function Home() {
     <div className="flex flex-col gap-6">
       <div>
         <span className="w-fit rounded-full bg-surface-dim px-3 py-1 text-xs font-semibold text-primary">
-          Fase 2 — busca tradicional
+          Busca tradicional
         </span>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight">
           O que você procura perto de você?
@@ -102,7 +118,12 @@ export default function Home() {
       {resultsStatus === 'loaded' && (
         <div className="flex flex-col gap-3">
           {results.map((place) => (
-            <PlaceCard key={place.id} place={place} />
+            <PlaceCard
+              key={place.id}
+              place={place}
+              isFavorite={favorites.isFavorite(place.id)}
+              onToggleFavorite={toggleFavorite}
+            />
           ))}
         </div>
       )}

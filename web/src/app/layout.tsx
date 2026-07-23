@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NavBar } from "@/components/nav-bar";
+import { SiteFooter } from "@/components/site-footer";
+import { AuthProvider } from "@/lib/auth/auth-context";
+import { FavoritesProvider } from "@/lib/favorites/favorites-context";
 import { PlaceCacheProvider } from "@/lib/place-cache";
 import "./globals.css";
 
@@ -31,12 +34,17 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
-        <PlaceCacheProvider>
-          <NavBar />
-          <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
-            {children}
-          </main>
-        </PlaceCacheProvider>
+        <AuthProvider>
+          <FavoritesProvider>
+            <PlaceCacheProvider>
+              <NavBar />
+              <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+                {children}
+              </main>
+              <SiteFooter />
+            </PlaceCacheProvider>
+          </FavoritesProvider>
+        </AuthProvider>
       </body>
     </html>
   );
