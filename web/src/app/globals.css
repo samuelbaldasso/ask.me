@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Paleta do Ask.me — mesma usada no app Flutter (front/lib/core/theme/app_theme.dart) */
+:root {
+  --background: #fbf9ff;
+  --foreground: #171123;
+  --color-primary: #7c3aed;
+  --color-primary-dark: #5b21b6;
+  --color-secondary: #ff6b6b;
+  --color-tertiary: #ffb020;
+  --color-success: #22c55e;
+  --color-surface: #fbf9ff;
+  --color-surface-dim: #f1ebff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary);
+  --color-tertiary: var(--color-tertiary);
+  --color-success: var(--color-success);
+  --color-surface: var(--color-surface);
+  --color-surface-dim: var(--color-surface-dim);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #14101f;
+    --foreground: #ededed;
+    --color-surface: #1c1730;
+    --color-surface-dim: #241d3d;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}

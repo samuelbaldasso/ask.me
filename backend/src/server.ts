@@ -1,11 +1,14 @@
 import app from './app';
 import { env } from './config/env';
 import { prisma } from './db/prisma';
+import { ensureFavoritesTable } from './db/ensureFavoritesTable';
 
 async function main() {
   // Verifica conexão com o banco antes de aceitar tráfego
   await prisma.$connect();
   console.log('✅ Banco de dados conectado');
+
+  await ensureFavoritesTable();
 
   const server = app.listen(env.PORT, () => {
     console.log(`🚀 Ask.me backend rodando em http://localhost:${env.PORT}`);
