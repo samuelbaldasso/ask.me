@@ -111,7 +111,7 @@ function SubscriptionBody() {
             </span>
             <h1 className="text-xl font-extrabold text-[#171123]">ask.me Premium</h1>
             <p className="text-sm text-[#171123]/70">
-              R$ 20,00/mês · cartão de crédito · cancele quando quiser
+              R$ 39,90/mês · cartão de crédito · cancele quando quiser
             </p>
             {errorMessage && (
               <p className="text-sm font-semibold text-[#EF4444]">{errorMessage}</p>

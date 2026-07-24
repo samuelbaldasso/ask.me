@@ -46,7 +46,7 @@ enum SubscriptionStatus {
   unpaid
 }
 
-// Assinatura mensal via Stripe (R$20,00/mês). MVP cobre apenas cartão de
+// Assinatura mensal via Stripe (R$39,90/mês). MVP cobre apenas cartão de
 // crédito (Stripe Subscriptions nativo, renovação automática). Pix fica
 // registrado como dívida técnica: Stripe não suporta débito automático
 // recorrente via Pix — exigiria gerar uma cobrança nova por ciclo
