@@ -25,9 +25,9 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-semibold transition ${
+      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2.5 text-sm font-semibold transition active:scale-95 ${
         selected
-          ? 'bg-primary text-white'
+          ? 'bg-primary text-white shadow-[0_4px_10px_rgba(124,58,237,0.25)]'
           : 'bg-surface-dim text-[#3A2E5C] hover:bg-surface-dim/70'
       }`}
     >

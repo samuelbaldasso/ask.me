@@ -14,14 +14,21 @@ export default function LoginPage() {
   }, [isAuthenticated, router]);
 
   return (
-    <div className="flex flex-col items-center gap-6 py-16 text-center">
-      <h1 className="text-3xl font-extrabold tracking-tight">Entrar</h1>
-      <p className="max-w-sm text-foreground/70">
-        Faça login para favoritar lugares, perguntar em linguagem natural e
-        gerenciar sua assinatura.
-      </p>
-      <GoogleSignInButton />
-      {errorMessage && <p className="text-sm text-[#EF4444]">{errorMessage}</p>}
+    <div className="flex justify-center py-10 sm:py-16">
+      <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-[28px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(124,58,237,0.08)]">
+        <span className="text-4xl" aria-hidden>
+          👋
+        </span>
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Bem-vindo de volta</h1>
+          <p className="mt-2 text-sm text-foreground/70">
+            Entre para favoritar lugares, perguntar em linguagem natural e
+            gerenciar sua assinatura.
+          </p>
+        </div>
+        <GoogleSignInButton />
+        {errorMessage && <p className="text-sm font-semibold text-[#EF4444]">{errorMessage}</p>}
+      </div>
     </div>
   );
 }

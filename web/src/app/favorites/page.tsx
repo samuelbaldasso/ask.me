@@ -51,10 +51,15 @@ function FavoritesList() {
       )}
 
       {favorites.status === 'loaded' && favorites.places.length === 0 && (
-        <p className="py-16 text-center text-foreground/70">
-          Você ainda não favoritou nenhum lugar. Toque no coração de um
-          resultado da busca.
-        </p>
+        <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-foreground/70">
+          <span className="text-4xl" aria-hidden>
+            🤍
+          </span>
+          <p className="max-w-xs px-4">
+            Você ainda não favoritou nenhum lugar. Toque no coração de um
+            resultado da busca.
+          </p>
+        </div>
       )}
 
       {favorites.status === 'loaded' && favorites.places.length > 0 && (
