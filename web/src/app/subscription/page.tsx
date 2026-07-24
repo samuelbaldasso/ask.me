@@ -79,9 +79,11 @@ function SubscriptionBody() {
             <span className="text-5xl" aria-hidden>
               ✅
             </span>
-            <h1 className="text-xl font-extrabold">Sua assinatura está ativa!</h1>
+            <h1 className="text-xl font-extrabold text-[#171123]">
+              Sua assinatura está ativa!
+            </h1>
             {subscription?.currentPeriodEnd && (
-              <p className="text-sm text-foreground/70">
+              <p className="text-sm text-[#171123]/70">
                 Próxima renovação: {formatDate(subscription.currentPeriodEnd)}
               </p>
             )}
@@ -107,8 +109,8 @@ function SubscriptionBody() {
             <span className="text-5xl" aria-hidden>
               👑
             </span>
-            <h1 className="text-xl font-extrabold">ask.me Premium</h1>
-            <p className="text-sm text-foreground/70">
+            <h1 className="text-xl font-extrabold text-[#171123]">ask.me Premium</h1>
+            <p className="text-sm text-[#171123]/70">
               R$ 20,00/mês · cartão de crédito · cancele quando quiser
             </p>
             {errorMessage && (

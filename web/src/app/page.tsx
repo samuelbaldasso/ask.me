@@ -133,7 +133,7 @@ export default function Home() {
 
 function StatusMessage({ text, onRetry }: { text: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-foreground/70">
+    <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-[#171123]/70">
       <p className="max-w-sm px-4">{text}</p>
       {onRetry && (
         <button

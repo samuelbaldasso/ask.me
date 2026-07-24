@@ -89,7 +89,7 @@ function AskChat() {
 
       <div className="mt-4 flex-1 overflow-y-auto rounded-[20px] bg-white/90 p-4 shadow-[0_6px_16px_rgba(124,58,237,0.06)]">
         {messages.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 text-center text-foreground/70">
+          <div className="flex h-full flex-col items-center justify-center gap-4 text-center text-[#171123]/70">
             <span className="text-4xl" aria-hidden>
               💬
             </span>

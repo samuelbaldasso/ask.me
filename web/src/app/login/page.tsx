@@ -20,8 +20,10 @@ export default function LoginPage() {
           👋
         </span>
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Bem-vindo de volta</h1>
-          <p className="mt-2 text-sm text-foreground/70">
+          <h1 className="text-2xl font-extrabold tracking-tight text-[#171123]">
+            Bem-vindo de volta
+          </h1>
+          <p className="mt-2 text-sm text-[#171123]/70">
             Entre para favoritar lugares, perguntar em linguagem natural e
             gerenciar sua assinatura.
           </p>

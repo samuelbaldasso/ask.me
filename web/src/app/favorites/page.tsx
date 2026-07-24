@@ -51,7 +51,7 @@ function FavoritesList() {
       )}
 
       {favorites.status === 'loaded' && favorites.places.length === 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-foreground/70">
+        <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-[#171123]/70">
           <span className="text-4xl" aria-hidden>
             🤍
           </span>
