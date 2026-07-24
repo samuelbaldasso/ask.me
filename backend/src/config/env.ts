@@ -22,12 +22,20 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_ID_MONTHLY: z.string().optional(),
   // URLs para onde o Stripe Checkout redireciona após sucesso/cancelamento.
-  // Em produção, apontam para um deep link do app (ex: askme://subscription/success).
-  STRIPE_CHECKOUT_SUCCESS_URL: z.string().default('askme://subscription/success'),
-  STRIPE_CHECKOUT_CANCEL_URL: z.string().default('askme://subscription/cancel'),
+  // Hoje apontam para a página /subscription do site web (Vercel); o app
+  // mobile, quando existir em produção, deve sobrescrever com deep link
+  // (ex: askme://subscription/success) via variável de ambiente própria.
+  STRIPE_CHECKOUT_SUCCESS_URL: z
+    .string()
+    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
+  STRIPE_CHECKOUT_CANCEL_URL: z
+    .string()
+    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
   // Para onde o Stripe Billing Portal (gerenciar/cancelar assinatura) retorna
   // o usuário depois que ele fecha o portal.
-  STRIPE_BILLING_PORTAL_RETURN_URL: z.string().default('askme://subscription/return'),
+  STRIPE_BILLING_PORTAL_RETURN_URL: z
+    .string()
+    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
 });
 
 const parsed = envSchema.safeParse(process.env);
