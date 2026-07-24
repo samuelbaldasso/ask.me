@@ -14,7 +14,7 @@ export function NavBar() {
   const { isAuthenticated, user, signOut } = useAuth();
 
   return (
-    <header className="bg-gradient-to-br from-primary to-[#a855f7] text-white">
+    <header className="sticky top-0 z-50 bg-gradient-to-br from-primary to-[#a855f7] text-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link href="/" className="text-xl font-extrabold tracking-tight">
           ask.me
