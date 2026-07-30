@@ -54,7 +54,7 @@ export function NavBar() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-gradient-to-br from-primary to-[#a855f7]/95 text-white shadow-[0_4px_20px_rgba(124,58,237,0.18)] backdrop-blur supports-[backdrop-filter]:bg-primary/95">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
         <Link
-          href="/"
+          href="/sobre"
           className="flex items-center gap-1.5 text-xl font-extrabold tracking-tight"
           onClick={() => setMenuOpen(false)}
         >
