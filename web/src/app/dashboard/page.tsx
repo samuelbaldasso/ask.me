@@ -135,7 +135,7 @@ function SubscriptionBanner({
         <p className="mt-1 text-sm text-[#171123]/70">
           {isActive
             ? 'Seu negócio aparece em destaque nas buscas do ask.me.'
-            : 'R$ 39,90/mês · apareça em destaque nas buscas · cancele quando quiser.'}
+            : 'R$ 99,90/mês · apareça em destaque nas buscas · cancele quando quiser.'}
         </p>
         {errorMessage && (
           <p className="mt-1 text-sm font-semibold text-[#EF4444]">{errorMessage}</p>
