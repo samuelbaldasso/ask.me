@@ -19,6 +19,16 @@ export function ask(query: string, lat: number, lng: number): Promise<AskResult>
   return apiFetch<AskResult>('/ask', { method: 'POST', body: { query, lat, lng } });
 }
 
+export interface GeocodeResult {
+  lat: number;
+  lng: number;
+  formattedAddress: string;
+}
+
+export function geocode(address: string): Promise<GeocodeResult> {
+  return apiFetch<GeocodeResult>('/geocode', { query: { address } });
+}
+
 export function loginWithGoogle(
   idToken: string,
 ): Promise<{ token: string; user: AppUser }> {

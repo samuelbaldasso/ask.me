@@ -27,6 +27,61 @@ export interface NearbyPlace {
   lng: number;
 }
 
+export interface GeocodeResult {
+  lat: number;
+  lng: number;
+  formattedAddress: string;
+}
+
+const GOOGLE_GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
+
+/**
+ * Converte um endereço/bairro/cidade em coordenadas via Google Geocoding API
+ * — permite buscar sem depender do GPS do navegador (ex: usuário nega a
+ * permissão de localização). Reaproveita GOOGLE_PLACES_API_KEY, que já tem
+ * a Geocoding API habilitada no mesmo projeto do Google Cloud.
+ */
+export async function geocodeAddress(query: string): Promise<GeocodeResult | null> {
+  if (!env.GOOGLE_PLACES_API_KEY) {
+    return null;
+  }
+
+  const url = new URL(GOOGLE_GEOCODE_URL);
+  url.searchParams.set('address', query);
+  url.searchParams.set('key', env.GOOGLE_PLACES_API_KEY);
+  // Sem region/components: aceita qualquer localidade, não só Brasil —
+  // usuários podem estar buscando de fora do país.
+
+  try {
+    const res = await fetchWithTimeout(url.toString());
+    const body = (await res.json()) as {
+      status: string;
+      results?: Array<{
+        formatted_address: string;
+        geometry?: { location?: { lat: number; lng: number } };
+      }>;
+    };
+
+    if (body.status !== 'OK' || !body.results?.length) {
+      return null;
+    }
+
+    const [first] = body.results;
+    if (!first.geometry?.location) {
+      return null;
+    }
+
+    return {
+      lat: first.geometry.location.lat,
+      lng: first.geometry.location.lng,
+      formattedAddress: first.formatted_address,
+    };
+  } catch (err) {
+    console.error('[mapsService] Falha ao geocodificar endereço:', (err as Error).message);
+    return null;
+  }
+}
+
 /**
  * Busca estabelecimentos reais por geolocalização via Google Places
  * Nearby Search — fonte dos dados que populam o banco (src/db/discoverPlaces.ts).
