@@ -9,7 +9,7 @@ const links = [
   { href: '/buscar', label: 'Buscar' },
   { href: '/ask', label: 'Perguntar' },
   { href: '/favorites', label: 'Favoritos' },
-  { href: '/subscription', label: 'Assinatura' },
+  { href: '/dashboard', label: 'Para empresas' },
 ];
 
 export function NavBar() {

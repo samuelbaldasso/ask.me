@@ -49,18 +49,23 @@ export async function searchPlaces(
 
   const whereClause = conditions.join(' AND ');
 
-  // Query principal — retorna distância em metros junto com os dados
+  // Query principal — retorna distância em metros junto com os dados.
+  // LEFT JOIN em subscriptions ativas do dono do place: lojistas assinantes
+  // do plano B2B (ver businessService/Place.ownerId) aparecem em destaque
+  // no topo dos resultados, antes da ordenação por distância.
   const rows = await prisma.$queryRawUnsafe<RawPlaceRow[]>(
     [
       `SELECT`,
       `  p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,`,
       `  p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,`,
       `  c.slug AS category_slug, c.label AS category_label,`,
+      `  (s.id IS NOT NULL) AS is_featured,`,
       `  ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters`,
       `FROM places p`,
       `JOIN categories c ON c.id = p.category_id`,
+      `LEFT JOIN subscriptions s ON s.user_id = p.owner_id AND s.status = 'active'`,
       `WHERE ${whereClause}`,
-      `ORDER BY distance_meters ASC`,
+      `ORDER BY is_featured DESC, distance_meters ASC`,
       `LIMIT $${paramIdx++} OFFSET $${paramIdx++}`,
     ].join('\n'),
     ...params,
@@ -104,6 +109,7 @@ export async function searchPlaces(
       phone: row.phone,
       website: row.website,
       isOpenNow: hours.length > 0 ? isOpenNow(hours) : null,
+      isFeatured: row.is_featured,
     };
   });
 
@@ -140,9 +146,11 @@ export async function getPlacesByIds(
       p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,
       p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,
       c.slug AS category_slug, c.label AS category_label,
+      (s.id IS NOT NULL) AS is_featured,
       ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters
     FROM places p
     JOIN categories c ON c.id = p.category_id
+    LEFT JOIN subscriptions s ON s.user_id = p.owner_id AND s.status = 'active'
     WHERE p.id = ANY($3) AND p.is_active = true
     ORDER BY distance_meters ASC
     `,
@@ -172,6 +180,7 @@ export async function getPlacesByIds(
     phone: row.phone,
     website: row.website,
     isOpenNow: (hoursMap[row.id] ?? []).length > 0 ? isOpenNow(hoursMap[row.id]) : null,
+    isFeatured: row.is_featured,
   }));
 }
 
@@ -194,6 +203,7 @@ interface RawPlaceRow {
   website: string | null;
   category_slug: string;
   category_label: string;
+  is_featured: boolean;
   distance_meters: number | bigint;
 }
 

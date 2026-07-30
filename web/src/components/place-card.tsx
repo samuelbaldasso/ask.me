@@ -35,6 +35,11 @@ export function PlaceCard({ place, isFavorite, onToggleFavorite }: PlaceCardProp
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
+          {place.isFeatured && (
+            <span className="shrink-0 text-sm" aria-label="Destaque" title="Estabelecimento em destaque">
+              👑
+            </span>
+          )}
           <span className="min-w-0 flex-1 truncate font-bold text-[#171123]">
             {place.name}
           </span>

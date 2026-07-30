@@ -1,5 +1,5 @@
 import { Router, IRouter } from 'express';
-import { searchPlacesController } from '../controllers/placesController';
+import { searchPlacesController, trackPlaceEventController } from '../controllers/placesController';
 
 const router: IRouter = Router();
 
@@ -17,5 +17,15 @@ const router: IRouter = Router();
  *   offset      (opcional)   — deslocamento para paginação (default: 0)
  */
 router.get('/', searchPlacesController);
+
+/**
+ * POST /places/:id/track
+ * Registra uma visualização ou clique (telefone/site) — usado no relatório
+ * do painel do lojista. Pública (sem auth) pois o consumidor não faz login
+ * para buscar/ver detalhes.
+ *
+ * Body: { type: "view" | "click" }
+ */
+router.post('/:id/track', trackPlaceEventController);
 
 export default router;

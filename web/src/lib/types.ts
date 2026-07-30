@@ -19,6 +19,7 @@ export interface Place {
   phone: string | null;
   website: string | null;
   isOpenNow: boolean | null;
+  isFeatured: boolean;
 }
 
 export function distanceLabel(distanceMeters: number): string {
@@ -102,4 +103,47 @@ export interface AskResult {
   answer: string;
   usedAi: boolean;
   results: PaginatedResult<Place>;
+}
+
+// --- Painel do lojista (B2B) ---
+
+export interface BusinessPlace {
+  id: string;
+  name: string;
+  description: string | null;
+  address: string;
+  city: string;
+  phone: string | null;
+  website: string | null;
+  acceptsPets: boolean;
+  acceptsCards: boolean;
+  hasParking: boolean;
+  category: PlaceCategory;
+}
+
+export interface ClaimableBusinessPlace extends BusinessPlace {
+  isClaimed: boolean;
+  isMine: boolean;
+}
+
+export interface MyBusiness {
+  places: BusinessPlace[];
+  subscription: SubscriptionStatus;
+}
+
+export interface PlaceStats {
+  windowDays: number;
+  viewsTotal: number;
+  clicksTotal: number;
+  viewsLast30Days: number;
+  clicksLast30Days: number;
+}
+
+export interface UpdatePlaceProfileInput {
+  description?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  acceptsPets?: boolean;
+  acceptsCards?: boolean;
+  hasParking?: boolean;
 }

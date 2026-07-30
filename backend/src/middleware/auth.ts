@@ -52,9 +52,10 @@ export function authenticate(
 
 /**
  * Restringe a rota a usuários com assinatura ativa — usar sempre depois de
- * `authenticate` (depende de `req.user`). Regra de negócio: a busca por IA
- * (/ask) é o benefício exclusivo do plano Premium; a busca tradicional
- * (/places) continua livre para todos.
+ * `authenticate` (depende de `req.user`). Regra de negócio: todas as
+ * funcionalidades do lado consumidor (busca, IA, favoritos) são livres; a
+ * assinatura paga agora é o plano B2B do lojista (ver routes/business.ts),
+ * usado para liberar destaque/visibilidade nos resultados de busca.
  */
 export async function requireActiveSubscription(
   req: Request,

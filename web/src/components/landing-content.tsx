@@ -56,21 +56,31 @@ export function LandingContent({ onNavigate }: { onNavigate?: () => void }) {
 
       <section className="flex flex-col items-center gap-4 rounded-[28px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(124,58,237,0.08)] sm:p-12">
         <span className="text-4xl" aria-hidden>
-          👑
+          🎉
         </span>
         <h2 className="text-2xl font-extrabold text-[#171123]">
-          Busca tradicional é sempre grátis
+          100% grátis para quem busca
         </h2>
         <p className="max-w-md text-[#171123]/70">
-          A busca por IA em linguagem natural é o benefício do{' '}
-          <strong className="text-primary">ask.me Premium</strong>, por R$ 39,90/mês. Cancele
-          quando quiser.
+          Busca tradicional e busca por IA em linguagem natural — sem mensalidade,
+          sem cartão de crédito.
+        </p>
+      </section>
+
+      <section className="flex flex-col items-center gap-4 rounded-[28px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(124,58,237,0.08)] sm:p-12">
+        <span className="text-4xl" aria-hidden>
+          🏪
+        </span>
+        <h2 className="text-2xl font-extrabold text-[#171123]">Dono de um negócio?</h2>
+        <p className="max-w-md text-[#171123]/70">
+          Reivindique seu estabelecimento, gerencie seu perfil e acompanhe quantas
+          pessoas te encontraram — assine para aparecer em destaque.
         </p>
         <Link
-          href="/subscription"
+          href="/dashboard"
           className="mt-2 rounded-2xl border-2 border-primary px-6 py-3 font-bold text-primary transition hover:bg-primary/5"
         >
-          Ver planos
+          Painel do lojista
         </Link>
       </section>
     </div>

@@ -31,6 +31,7 @@ model User {
 
   subscription  Subscription?
   favorites     Favorite[]
+  ownedPlaces   Place[]
 
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt      @map("updated_at")
@@ -46,11 +47,11 @@ enum SubscriptionStatus {
   unpaid
 }
 
-// Assinatura mensal via Stripe (R$39,90/mês). MVP cobre apenas cartão de
-// crédito (Stripe Subscriptions nativo, renovação automática). Pix fica
-// registrado como dívida técnica: Stripe não suporta débito automático
-// recorrente via Pix — exigiria gerar uma cobrança nova por ciclo
-// (collection_method: send_invoice), fluxo com fricção manual mensal.
+// Assinatura mensal via Stripe (plano B2B do lojista — ver Place.ownerId).
+// MVP cobre apenas cartão de crédito (Stripe Subscriptions nativo, renovação
+// automática). Pix fica registrado como dívida técnica: Stripe não suporta
+// débito automático recorrente via Pix — exigiria gerar uma cobrança nova
+// por ciclo (collection_method: send_invoice), fluxo com fricção manual mensal.
 model Subscription {
   id                    String             @id @default(cuid())
   userId                String             @unique @map("user_id")
@@ -103,9 +104,16 @@ model Place {
   categoryId  Int      @map("category_id")
   category    Category @relation(fields: [categoryId], references: [id])
 
+  // Dono do estabelecimento (lojista) — null até ser reivindicado via
+  // POST /business/claim. Um Place sem owner é gerenciado só pela busca
+  // pública (dados vindos do Google Places / seeds).
+  ownerId     String?  @map("owner_id")
+  owner       User?    @relation(fields: [ownerId], references: [id])
+
   hours       OpeningHours[]
   attributes  PlaceAttribute[]
   favoritedBy Favorite[]
+  events      PlaceEvent[]
 
   acceptsPets   Boolean @default(false) @map("accepts_pets")
   acceptsCards  Boolean @default(true)  @map("accepts_cards")
@@ -117,7 +125,27 @@ model Place {
 
   @@index([categoryId])
   @@index([isActive])
+  @@index([ownerId])
   @@map("places")
+}
+
+enum PlaceEventType {
+  view
+  click
+}
+
+// Log de eventos usado para o relatório do painel do lojista (visualizações
+// nas buscas/detalhe e cliques em telefone/site). Agregado sob demanda em
+// getPlaceStats — sem tabela de contadores pré-agregados no MVP.
+model PlaceEvent {
+  id        String         @id @default(cuid())
+  placeId   String         @map("place_id")
+  place     Place          @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  type      PlaceEventType
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  @@index([placeId, type, createdAt])
+  @@map("place_events")
 }
 
 // Horários de funcionamento por dia da semana

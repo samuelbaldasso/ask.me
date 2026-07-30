@@ -36,6 +36,7 @@ export interface PlaceResult {
   phone: string | null;
   website: string | null;
   isOpenNow: boolean | null; // null = sem horário cadastrado
+  isFeatured: boolean; // dono do estabelecimento tem assinatura B2B ativa
 }
 
 export interface PaginatedResult<T> {

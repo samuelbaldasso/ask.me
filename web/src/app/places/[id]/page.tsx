@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import { categoryStyleForSlug } from '@/lib/category-style';
+import { trackPlaceEvent } from '@/lib/api/endpoints';
 import { usePlaceCache } from '@/lib/place-cache';
 import { distanceLabel } from '@/lib/types';
 
@@ -13,6 +14,13 @@ export default function PlaceDetailPage({
 }) {
   const { id } = use(params);
   const place = usePlaceCache().get(id);
+
+  // Base do relatório do painel do lojista — visualização do perfil do
+  // estabelecimento; nunca bloqueia a navegação se a chamada falhar.
+  useEffect(() => {
+    if (place) trackPlaceEvent(id, 'view').catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, !!place]);
 
   if (!place) {
     return (
@@ -41,7 +49,14 @@ export default function PlaceDetailPage({
           <p className="text-xs font-extrabold uppercase tracking-widest">
             {place.category.label}
           </p>
-          <h1 className="text-2xl font-extrabold">{place.name}</h1>
+          <h1 className="text-2xl font-extrabold">
+            {place.isFeatured && (
+              <span aria-label="Destaque" title="Estabelecimento em destaque">
+                👑{' '}
+              </span>
+            )}
+            {place.name}
+          </h1>
         </div>
       </div>
 
@@ -65,10 +80,21 @@ export default function PlaceDetailPage({
         <InfoRow icon="📍" text={`${place.address}, ${place.city}`} />
         <InfoRow icon="🧭" text={`A ${distanceLabel(place.distanceMeters)} de você`} />
         {place.phone && (
-          <InfoRow icon="📞" text={place.phone} href={`tel:${place.phone}`} />
+          <InfoRow
+            icon="📞"
+            text={place.phone}
+            href={`tel:${place.phone}`}
+            onClick={() => trackPlaceEvent(id, 'click').catch(() => {})}
+          />
         )}
         {place.website && (
-          <InfoRow icon="🌐" text={place.website} href={place.website} external />
+          <InfoRow
+            icon="🌐"
+            text={place.website}
+            href={place.website}
+            external
+            onClick={() => trackPlaceEvent(id, 'click').catch(() => {})}
+          />
         )}
       </div>
 
@@ -86,11 +112,13 @@ function InfoRow({
   text,
   href,
   external,
+  onClick,
 }: {
   icon: string;
   text: string;
   href?: string;
   external?: boolean;
+  onClick?: () => void;
 }) {
   const content = (
     <div className="flex items-center gap-3.5 px-3 py-3">
@@ -106,7 +134,7 @@ function InfoRow({
   if (!href) return content;
 
   return (
-    <a href={href} target={external ? '_blank' : undefined} rel="noreferrer">
+    <a href={href} target={external ? '_blank' : undefined} rel="noreferrer" onClick={onClick}>
       {content}
     </a>
   );

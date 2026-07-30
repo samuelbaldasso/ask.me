@@ -22,7 +22,7 @@ export function setAuthToken(token: string | null) {
 }
 
 interface RequestOptions {
-  method?: 'GET' | 'POST' | 'DELETE' | 'PUT';
+  method?: 'GET' | 'POST' | 'DELETE' | 'PUT' | 'PATCH';
   query?: URLSearchParams | Record<string, string>;
   body?: unknown;
 }
