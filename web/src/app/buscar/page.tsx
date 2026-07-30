@@ -94,40 +94,28 @@ export default function Home() {
     setShowManualForm(false);
   };
 
-  // Sem coordenadas ainda (GPS carregando/negado e nenhum endereço manual
-  // informado): oferece as duas opções lado a lado, em vez de travar o
-  // usuário esperando o navegador ou negando a permissão.
+  // Sem coordenadas ainda: enquanto o GPS está carregando, não trava o
+  // usuário com uma tela própria — só um loading discreto até chegar a
+  // localização (ou o erro, quando então oferece a busca manual).
   if (!coords) {
+    if (geo.status !== 'error') {
+      return <StatusMessage text="Obtendo sua localização..." />;
+    }
+
     return (
       <div className="flex flex-col items-center gap-6 py-10 text-center">
-        <div>
-          <span className="w-fit rounded-full bg-surface-dim px-3 py-1 text-xs font-semibold text-primary">
-            Busca tradicional
-          </span>
-          <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
-            Onde você está?
-          </h1>
-        </div>
-
-        {geo.status === 'loading' && (
-          <p className="text-sm text-[#171123]/60">Tentando obter sua localização por GPS...</p>
-        )}
-        {geo.status === 'error' && (
-          <p className="max-w-sm text-sm text-[#171123]/60">
-            {geo.errorMessage} Você também pode digitar um endereço abaixo.
-          </p>
-        )}
+        <p className="max-w-sm text-sm text-[#171123]/60">
+          {geo.errorMessage} Você também pode digitar um endereço abaixo.
+        </p>
 
         <div className="flex w-full max-w-sm flex-col gap-3">
-          {geo.status === 'error' && (
-            <button
-              type="button"
-              onClick={geo.retry}
-              className="rounded-2xl border-2 border-primary px-6 py-3 font-bold text-primary transition hover:bg-primary/5"
-            >
-              Tentar GPS de novo
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={geo.retry}
+            className="rounded-2xl border-2 border-primary px-6 py-3 font-bold text-primary transition hover:bg-primary/5"
+          >
+            Tentar GPS de novo
+          </button>
           <ManualLocationForm onLocated={handleManualLocation} />
         </div>
       </div>

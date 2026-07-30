@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import type { ChatMessage } from '@/lib/chat-message';
 import { PlaceCard } from './place-card';
 import { TypingIndicator } from './typing-indicator';
@@ -16,7 +17,15 @@ export function ChatBubble({ message }: { message: ChatMessage }) {
               : 'rounded-bl-md bg-[#F1EBFF] text-[#171123]'
         }`}
       >
-        {message.isLoading ? <TypingIndicator /> : <p>{message.text}</p>}
+        {message.isLoading ? (
+          <TypingIndicator />
+        ) : isUser ? (
+          <p>{message.text}</p>
+        ) : (
+          <div className="chat-markdown">
+            <ReactMarkdown>{message.text}</ReactMarkdown>
+          </div>
+        )}
       </div>
 
       {message.results && message.results.length > 0 && (

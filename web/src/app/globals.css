@@ -40,3 +40,41 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+.chat-markdown p {
+  margin: 0.25rem 0;
+}
+
+.chat-markdown p:first-child {
+  margin-top: 0;
+}
+
+.chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown ul,
+.chat-markdown ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+
+.chat-markdown ul {
+  list-style: disc;
+}
+
+.chat-markdown ol {
+  list-style: decimal;
+}
+
+.chat-markdown li {
+  margin: 0.125rem 0;
+}
+
+.chat-markdown strong {
+  font-weight: 700;
+}
+
+.chat-markdown a {
+  text-decoration: underline;
+}
