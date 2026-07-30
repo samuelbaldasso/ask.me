@@ -151,6 +151,24 @@ model Favorite {
   @@map("favorites")
 }
 
+// Registra regiões já varridas via Google Places Nearby Search, para que a
+// busca do usuário (searchPlacesService) dispare descoberta automática sem
+// chamar a API do Google a cada request — só quando a célula de grade
+// (lat/lng arredondados) + categoria ainda não foi descoberta ou expirou.
+// Ver src/services/discoveryService.ts.
+model DiscoveredRegion {
+  id            String   @id @default(cuid())
+  // Grade de ~1,1km (2 casas decimais) — não é o ponto exato da busca do
+  // usuário, para que buscas próximas reaproveitem a mesma descoberta.
+  latCell       Float    @map("lat_cell")
+  lngCell       Float    @map("lng_cell")
+  categorySlug  String   @map("category_slug")
+  discoveredAt  DateTime @default(now()) @map("discovered_at")
+
+  @@unique([latCell, lngCell, categorySlug])
+  @@map("discovered_regions")
+}
+
 // Atributos livres para extensibilidade futura (ex: "wifi", "drive-thru")
 model PlaceAttribute {
   id      Int    @id @default(autoincrement())

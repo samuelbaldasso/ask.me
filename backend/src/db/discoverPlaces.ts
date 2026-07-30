@@ -13,15 +13,7 @@
 import { prisma } from './prisma';
 import { nearbySearch } from '../services/mapsService';
 import { env } from '../config/env';
-
-// Mapeia categorias do produto para o `type` aceito pela Nearby Search API.
-// https://developers.google.com/maps/documentation/places/web-service/supported_types
-const CATEGORY_TO_GOOGLE_TYPE: Record<string, string> = {
-  restaurante: 'restaurant',
-  farmacia: 'pharmacy',
-  'pet-shop': 'pet_store',
-  supermercado: 'supermarket',
-};
+import { CATEGORY_TO_GOOGLE_TYPE } from '../config/categories';
 
 const DEFAULT_RADIUS_METERS = 5_000;
 

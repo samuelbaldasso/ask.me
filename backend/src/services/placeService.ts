@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { PaginatedResult, PlaceResult, SearchFilters } from '../types/place';
 
+const DEFAULT_RADIUS_METERS = 5_000;
+
 export const searchQuerySchema = z.object({
   lat: z.coerce.number().min(-90).max(90),
   lng: z.coerce.number().min(-180).max(180),
@@ -25,6 +27,13 @@ export async function searchPlacesService(
 ): Promise<PaginatedResult<PlaceResult>> {
   // Import dinâmico do repository evita que env.ts seja executado em testes unitários
   const { searchPlaces } = await import('../repositories/placeRepository');
+  const { ensureRegionDiscovered } = await import('./discoveryService');
+
+  // Descoberta automática: garante que a região já foi varrida via Google
+  // Places antes de consultar o Postgres (ver discoveryService.ts). Nunca
+  // lança — se falhar, a busca segue normalmente com o que já está no banco.
+  await ensureRegionDiscovered(query.lat, query.lng, query.radius ?? DEFAULT_RADIUS_METERS, query.category);
+
   const filters: SearchFilters = {
     lat: query.lat,
     lng: query.lng,
