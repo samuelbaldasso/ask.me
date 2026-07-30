@@ -2,14 +2,14 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { FilterBar } from '@/components/filter-bar';
+import { FilterBar, RADIUS_STEPS_METERS } from '@/components/filter-bar';
 import { PlaceCard } from '@/components/place-card';
 import { ApiError } from '@/lib/api/client';
 import { searchPlaces } from '@/lib/api/endpoints';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useFavorites } from '@/lib/favorites/favorites-context';
 import { usePlaceCache } from '@/lib/place-cache';
-import { defaultSearchFilters, type Place, type SearchFilters } from '@/lib/types';
+import { defaultSearchFilters, distanceLabel, type Place, type SearchFilters } from '@/lib/types';
 import { useGeolocation } from '@/lib/use-geolocation';
 
 type ResultsStatus = 'loading' | 'loaded' | 'empty' | 'error';
@@ -99,6 +99,7 @@ export default function Home() {
           onCategoryChange={(slug) => updateFilters({ categorySlug: slug ?? undefined })}
           onToggleOpenNow={(value) => updateFilters({ openNow: value })}
           onToggleAcceptsPets={(value) => updateFilters({ acceptsPets: value })}
+          onRadiusChange={(radiusMeters) => updateFilters({ radiusMeters })}
         />
       )}
 
@@ -111,8 +112,20 @@ export default function Home() {
         />
       )}
 
-      {resultsStatus === 'empty' && (
-        <StatusMessage text="Nenhum lugar encontrado com esses filtros. Tente ampliar o raio de busca." />
+      {resultsStatus === 'empty' && filters && (
+        <StatusMessage
+          text="Nenhum lugar encontrado com esses filtros."
+          onRetry={
+            nextRadiusStep(filters.radiusMeters)
+              ? () => updateFilters({ radiusMeters: nextRadiusStep(filters.radiusMeters)! })
+              : undefined
+          }
+          retryLabel={
+            nextRadiusStep(filters.radiusMeters)
+              ? `Ampliar para ${distanceLabel(nextRadiusStep(filters.radiusMeters)!)}`
+              : undefined
+          }
+        />
       )}
 
       {resultsStatus === 'loaded' && (
@@ -131,7 +144,19 @@ export default function Home() {
   );
 }
 
-function StatusMessage({ text, onRetry }: { text: string; onRetry?: () => void }) {
+function nextRadiusStep(currentMeters: number): number | undefined {
+  return RADIUS_STEPS_METERS.find((m) => m > currentMeters);
+}
+
+function StatusMessage({
+  text,
+  onRetry,
+  retryLabel = 'Tentar novamente',
+}: {
+  text: string;
+  onRetry?: () => void;
+  retryLabel?: string;
+}) {
   return (
     <div className="flex flex-col items-center gap-3 rounded-3xl bg-white/60 py-16 text-center text-[#171123]/70">
       <p className="max-w-sm px-4">{text}</p>
@@ -141,7 +166,7 @@ function StatusMessage({ text, onRetry }: { text: string; onRetry?: () => void }
           onClick={onRetry}
           className="rounded-2xl bg-primary px-6 py-3 font-bold text-white transition hover:opacity-90"
         >
-          Tentar novamente
+          {retryLabel}
         </button>
       )}
     </div>

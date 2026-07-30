@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { StatusCodes } from 'http-status-codes';
 import { env } from '../config/env';
+import { prisma } from '../db/prisma';
 
 export interface AuthPayload {
   sub: string;   // user id
@@ -47,4 +48,31 @@ export function authenticate(
   } catch {
     res.status(StatusCodes.UNAUTHORIZED).json({ error: 'Token inválido ou expirado' });
   }
+}
+
+/**
+ * Restringe a rota a usuários com assinatura ativa — usar sempre depois de
+ * `authenticate` (depende de `req.user`). Regra de negócio: a busca por IA
+ * (/ask) é o benefício exclusivo do plano Premium; a busca tradicional
+ * (/places) continua livre para todos.
+ */
+export async function requireActiveSubscription(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const subscription = await prisma.subscription.findUnique({
+    where: { userId: req.user!.sub },
+    select: { status: true },
+  });
+
+  if (subscription?.status !== 'active') {
+    res.status(StatusCodes.PAYMENT_REQUIRED).json({
+      error: 'Esta funcionalidade é exclusiva do plano Premium.',
+      code: 'SUBSCRIPTION_REQUIRED',
+    });
+    return;
+  }
+
+  next();
 }

@@ -16,6 +16,55 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString('pt-BR');
 }
 
+const PLAN_ROWS: Array<{ label: string; free: boolean; premium: boolean }> = [
+  { label: 'Busca tradicional por proximidade', free: true, premium: true },
+  { label: 'Favoritos', free: true, premium: true },
+  { label: 'Busca por IA em linguagem natural', free: false, premium: true },
+];
+
+function PlanComparison() {
+  return (
+    <div className="w-full max-w-sm overflow-hidden rounded-[28px] bg-white shadow-[0_10px_30px_rgba(124,58,237,0.08)]">
+      <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-3 gap-y-1 px-6 py-5 text-sm">
+        <span className="text-xs font-bold uppercase tracking-wide text-[#171123]/40">
+          Recurso
+        </span>
+        <span className="text-center text-xs font-bold uppercase tracking-wide text-[#171123]/40">
+          Free
+        </span>
+        <span className="text-center text-xs font-bold uppercase tracking-wide text-primary">
+          Premium
+        </span>
+        {PLAN_ROWS.map((row) => (
+          <PlanComparisonRow key={row.label} {...row} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlanComparisonRow({
+  label,
+  free,
+  premium,
+}: {
+  label: string;
+  free: boolean;
+  premium: boolean;
+}) {
+  return (
+    <>
+      <span className="py-2 text-left text-[#171123]/80">{label}</span>
+      <span className="py-2 text-center" aria-label={free ? 'Incluído' : 'Não incluído'}>
+        {free ? '✅' : '—'}
+      </span>
+      <span className="py-2 text-center" aria-label={premium ? 'Incluído' : 'Não incluído'}>
+        {premium ? '✅' : '—'}
+      </span>
+    </>
+  );
+}
+
 function SubscriptionBody() {
   const [status, setStatus] = useState<ViewStatus>('loading');
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
@@ -72,7 +121,8 @@ function SubscriptionBody() {
   const isActive = subscription?.status === 'active';
 
   return (
-    <div className="flex justify-center py-6 sm:py-10">
+    <div className="flex flex-col items-center gap-8 py-6 sm:py-10">
+      {!isActive && <PlanComparison />}
       <div className="flex w-full max-w-sm flex-col items-center gap-4 rounded-[28px] bg-white p-8 text-center shadow-[0_10px_30px_rgba(124,58,237,0.08)]">
         {isActive ? (
           <>
