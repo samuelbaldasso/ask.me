@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react';
 import { ChatBubble } from '@/components/chat-bubble';
 import { ask } from '@/lib/api/endpoints';
-import { RequireAuth } from '@/lib/auth/require-auth';
 import type { ChatMessage } from '@/lib/chat-message';
 import { usePlaceCache } from '@/lib/place-cache';
 import { useGeolocation } from '@/lib/use-geolocation';
@@ -143,9 +142,5 @@ function AskChat() {
 }
 
 export default function AskPage() {
-  return (
-    <RequireAuth>
-      <AskChat />
-    </RequireAuth>
-  );
+  return <AskChat />;
 }
