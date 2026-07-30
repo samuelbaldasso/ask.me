@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
 
 const links = [
-  { href: '/', label: 'Buscar' },
+  { href: '/buscar', label: 'Buscar' },
   { href: '/ask', label: 'Perguntar' },
   { href: '/favorites', label: 'Favoritos' },
   { href: '/subscription', label: 'Assinatura' },

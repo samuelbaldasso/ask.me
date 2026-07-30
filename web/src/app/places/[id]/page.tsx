@@ -21,7 +21,7 @@ export default function PlaceDetailPage({
           Não encontramos os detalhes desse lugar — volte para a busca e
           selecione-o novamente.
         </p>
-        <Link href="/" className="font-bold text-primary">
+        <Link href="/buscar" className="font-bold text-primary">
           Voltar para a busca
         </Link>
       </div>
