@@ -31,7 +31,7 @@ export function geocode(address: string): Promise<GeocodeResult> {
 
 export function loginWithGoogle(
   idToken: string,
-): Promise<{ token: string; user: AppUser }> {
+): Promise<{ token: string; isNewUser: boolean; user: AppUser }> {
   return apiFetch('/auth/google', { method: 'POST', body: { idToken } });
 }
 

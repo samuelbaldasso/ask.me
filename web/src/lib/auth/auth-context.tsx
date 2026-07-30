@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { setAuthToken } from '@/lib/api/client';
 import { loginWithGoogle } from '@/lib/api/endpoints';
+import { trackSignupConversion } from '@/lib/google-ads';
 import type { AppUser } from '@/lib/types';
 
 const TOKEN_STORAGE_KEY = 'askme_jwt';
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthToken(result.token);
       setUser(result.user);
       setStatus('authenticated');
+      if (result.isNewUser) trackSignupConversion();
     } catch {
       setErrorMessage('Não foi possível entrar com o Google. Tente novamente.');
       setStatus('unauthenticated');

@@ -61,11 +61,15 @@ describe('loginWithGoogle', () => {
       }),
     });
 
+    const createdAt = new Date('2026-01-01T00:00:00.000Z');
+
     (prisma.user.upsert as jest.Mock).mockResolvedValue({
       id: 'user-cuid-1',
       email: 'user@example.com',
       name: 'Usuária Teste',
       avatarUrl: 'https://example.com/avatar.png',
+      createdAt,
+      updatedAt: createdAt,
     });
 
     const result = await loginWithGoogle('good-token');
@@ -74,7 +78,32 @@ describe('loginWithGoogle', () => {
       expect.objectContaining({ where: { googleId: 'google-123' } }),
     );
     expect(result.user.email).toBe('user@example.com');
+    expect(result.isNewUser).toBe(true);
     expect(typeof result.token).toBe('string');
     expect(result.token.split('.')).toHaveLength(3); // formato JWT
+  });
+
+  it('marca isNewUser como false quando o usuário já existia (updatedAt diferente de createdAt)', async () => {
+    verifyIdTokenMock.mockResolvedValue({
+      getPayload: () => ({
+        sub: 'google-123',
+        email: 'user@example.com',
+        name: 'Usuária Teste',
+        picture: 'https://example.com/avatar.png',
+      }),
+    });
+
+    (prisma.user.upsert as jest.Mock).mockResolvedValue({
+      id: 'user-cuid-1',
+      email: 'user@example.com',
+      name: 'Usuária Teste',
+      avatarUrl: 'https://example.com/avatar.png',
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2026-02-01T00:00:00.000Z'),
+    });
+
+    const result = await loginWithGoogle('good-token');
+
+    expect(result.isNewUser).toBe(false);
   });
 });

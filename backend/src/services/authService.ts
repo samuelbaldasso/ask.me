@@ -26,6 +26,7 @@ export const googleLoginSchema = z.object({
 
 export interface AuthResult {
   token: string;
+  isNewUser: boolean;
   user: {
     id: string;
     email: string;
@@ -104,6 +105,10 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResult> {
 
   return {
     token: issueJwt(user.id),
+    // Upsert não diz se criou ou atualizou; created_at === updated_at só é
+    // verdade no instante da criação, então serve como sinal de "é o
+    // primeiro login" pra disparar a conversão de inscrição só uma vez.
+    isNewUser: user.createdAt.getTime() === user.updatedAt.getTime(),
     user: {
       id: user.id,
       email: user.email,
