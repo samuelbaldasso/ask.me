@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
-/* Paleta do Ask.me — mesma usada no app Flutter (front/lib/core/theme/app_theme.dart) */
+/* Paleta do Ask.me — mesma usada no app Flutter (front/lib/core/theme/app_theme.dart).
+   O site é intencionalmente light-only (nenhum componente foi desenhado com
+   suporte a dark mode — cores em boa parte hardcoded em hex). `color-scheme:
+   light` evita que o navegador aplique dark mode automático/forçado (Chrome
+   "Force Dark", Android WebView etc.), que quebra o contraste do texto em
+   telas com fundo/cartões fixos. */
 :root {
+  color-scheme: light;
   --background: #fbf9ff;
   --foreground: #171123;
   --color-primary: #7c3aed;
@@ -25,15 +31,6 @@
   --color-surface-dim: var(--color-surface-dim);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #14101f;
-    --foreground: #ededed;
-    --color-surface: #1c1730;
-    --color-surface-dim: #241d3d;
-  }
 }
 
 body {

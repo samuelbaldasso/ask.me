@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NavBar } from "@/components/nav-bar";
 import { SiteFooter } from "@/components/site-footer";
@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   title: "ask.me — encontre lugares perto de você",
   description:
     "Busque estabelecimentos por proximidade ou pergunte em linguagem natural.",
+};
+
+// Site é light-only — evita que o navegador force dark mode/inversão de
+// cores automática (ver comentário em globals.css).
+export const viewport: Viewport = {
+  colorScheme: "light",
 };
 
 export default function RootLayout({
