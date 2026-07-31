@@ -128,3 +128,11 @@ export function approveClaim(claimId: string): Promise<{ approved: boolean }> {
 export function rejectClaim(claimId: string): Promise<{ rejected: boolean }> {
   return apiFetch(`/admin/claims/${claimId}/reject`, { method: 'POST' });
 }
+
+export function listApprovedClaims(): Promise<{ data: AdminClaim[] }> {
+  return apiFetch('/admin/claims/approved');
+}
+
+export function revokeClaim(claimId: string): Promise<{ revoked: boolean }> {
+  return apiFetch(`/admin/claims/${claimId}/revoke`, { method: 'POST' });
+}

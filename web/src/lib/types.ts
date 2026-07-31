@@ -128,7 +128,7 @@ export interface BusinessPlace {
   category: PlaceCategory;
 }
 
-export type ClaimStatus = 'pending' | 'approved' | 'rejected';
+export type ClaimStatus = 'pending' | 'approved' | 'rejected' | 'revoked';
 
 export interface ClaimableBusinessPlace extends BusinessPlace {
   isClaimed: boolean;

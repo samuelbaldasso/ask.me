@@ -105,6 +105,10 @@ function DashboardBody() {
                   <span className="shrink-0 text-sm font-semibold text-[#C2410C]">
                     Aguardando aprovação
                   </span>
+                ) : claim.status === 'revoked' ? (
+                  <span className="shrink-0 text-sm font-semibold text-[#EF4444]">
+                    Acesso revogado
+                  </span>
                 ) : (
                   <span className="shrink-0 text-sm font-semibold text-[#EF4444]">
                     Não aprovado

@@ -114,7 +114,7 @@ export async function getMyBusiness(userId: string) {
       select: { status: true, currentPeriodEnd: true, cancelAtPeriodEnd: true },
     }),
     prisma.businessClaim.findMany({
-      where: { userId, status: { in: ['pending', 'rejected'] } },
+      where: { userId, status: { in: ['pending', 'rejected', 'revoked'] } },
       select: {
         id: true,
         status: true,

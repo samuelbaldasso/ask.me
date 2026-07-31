@@ -147,6 +147,10 @@ enum ClaimStatus {
   pending
   approved
   rejected
+  // Já foi aprovado, mas um admin desfez depois (ver POST
+  // /admin/claims/:id/revoke) — desvincula o Place do lojista. Distinto de
+  // "rejected" (nunca chegou a ser aprovado) pra manter o histórico claro.
+  revoked
 }
 
 // Pedido de reivindicação de um estabelecimento (POST /business/claim).

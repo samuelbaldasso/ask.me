@@ -705,6 +705,143 @@ describe('painel admin (/admin/claims)', () => {
       expect(me.body.pendingClaims[0].status).toBe('rejected');
     });
   });
+
+  describe('GET /api/v1/admin/claims/approved', () => {
+    it('retorna 401 sem token', async () => {
+      const res = await request(app).get('/api/v1/admin/claims/approved');
+      expect(res.status).toBe(401);
+    });
+
+    itWithDb('retorna 403 para usuário autenticado sem isAdmin', async () => {
+      const user = await createUser('admin-approved-list-forbidden');
+      const res = await request(app)
+        .get('/api/v1/admin/claims/approved')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`);
+      expect(res.status).toBe(403);
+    });
+
+    itWithDb('lista estabelecimentos com dono aprovado', async () => {
+      const admin = await createAdminUser('admin-approved-list');
+      const owner = await createUser('admin-approved-list-owner');
+      const place = await createUnclaimedPlace('Loja Já Aprovada Para Listar');
+
+      await claimAndApprove(owner.id, place.id);
+
+      const res = await request(app)
+        .get('/api/v1/admin/claims/approved')
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+
+      expect(res.status).toBe(200);
+      const found = res.body.data.find((c: { place: { id: string } }) => c.place.id === place.id);
+      expect(found).toBeDefined();
+      expect(found.user.id).toBe(owner.id);
+    });
+  });
+
+  describe('POST /api/v1/admin/claims/:claimId/revoke', () => {
+    it('retorna 401 sem token', async () => {
+      const res = await request(app).post('/api/v1/admin/claims/x/revoke');
+      expect(res.status).toBe(401);
+    });
+
+    itWithDb('retorna 403 para usuário autenticado sem isAdmin', async () => {
+      const user = await createUser('admin-revoke-forbidden');
+      const res = await request(app)
+        .post('/api/v1/admin/claims/x/revoke')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`);
+      expect(res.status).toBe(403);
+    });
+
+    itWithDb('retorna 404 para claimId inexistente', async () => {
+      const admin = await createAdminUser('admin-revoke-404');
+      const res = await request(app)
+        .post('/api/v1/admin/claims/claim-que-nao-existe/revoke')
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+      expect(res.status).toBe(404);
+    });
+
+    itWithDb('retorna 409 ao tentar revogar um claim que nunca foi aprovado', async () => {
+      const admin = await createAdminUser('admin-revoke-not-approved');
+      const claimant = await createUser('admin-revoke-not-approved-claimant');
+      const place = await createUnclaimedPlace('Loja Nunca Aprovada');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(claimant.id)}`)
+        .send({ placeId: place.id });
+
+      const list = await request(app)
+        .get('/api/v1/admin/claims')
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+      const claim = list.body.data.find((c: { place: { id: string } }) => c.place.id === place.id);
+
+      const res = await request(app)
+        .post(`/api/v1/admin/claims/${claim.id}/revoke`)
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+
+      expect(res.status).toBe(409);
+    });
+
+    itWithDb('revoga a aprovação, desvincula o place e permite reivindicar de novo', async () => {
+      const admin = await createAdminUser('admin-revoke-success');
+      const owner = await createUser('admin-revoke-success-owner');
+      const place = await createUnclaimedPlace('Restaurante Revogado');
+
+      await claimAndApprove(owner.id, place.id);
+
+      const approvedList = await request(app)
+        .get('/api/v1/admin/claims/approved')
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+      const claim = approvedList.body.data.find(
+        (c: { place: { id: string } }) => c.place.id === place.id,
+      );
+
+      const revokeRes = await request(app)
+        .post(`/api/v1/admin/claims/${claim.id}/revoke`)
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+
+      expect(revokeRes.status).toBe(200);
+      expect(revokeRes.body.revoked).toBe(true);
+
+      const me = await request(app)
+        .get('/api/v1/business/me')
+        .set('Authorization', `Bearer ${tokenFor(owner.id)}`);
+      expect(me.body.places).toEqual([]);
+      expect(me.body.pendingClaims[0].status).toBe('revoked');
+
+      // O place volta a ficar livre pra reivindicação
+      const reclaimRes = await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(owner.id)}`)
+        .send({ placeId: place.id });
+      expect(reclaimRes.status).toBe(200);
+      expect(reclaimRes.body.status).toBe('pending');
+    });
+
+    itWithDb('retorna 409 ao revogar o mesmo claim duas vezes', async () => {
+      const admin = await createAdminUser('admin-revoke-twice');
+      const owner = await createUser('admin-revoke-twice-owner');
+      const place = await createUnclaimedPlace('Loja Revogada Duas Vezes');
+
+      await claimAndApprove(owner.id, place.id);
+
+      const approvedList = await request(app)
+        .get('/api/v1/admin/claims/approved')
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+      const claim = approvedList.body.data.find(
+        (c: { place: { id: string } }) => c.place.id === place.id,
+      );
+
+      await request(app)
+        .post(`/api/v1/admin/claims/${claim.id}/revoke`)
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+      const secondRevoke = await request(app)
+        .post(`/api/v1/admin/claims/${claim.id}/revoke`)
+        .set('Authorization', `Bearer ${tokenFor(admin.id)}`);
+
+      expect(secondRevoke.status).toBe(409);
+    });
+  });
 });
 
 describe('POST /api/v1/places/:id/track', () => {
