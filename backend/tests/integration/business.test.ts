@@ -245,12 +245,128 @@ describe('painel do lojista (/business)', () => {
           description: 'Pão fresquinho todo dia',
           whatsappNumber: '5521999998888',
           menuUrl: 'https://cardapio.exemplo.com/trigo-dourado',
+          photoUrls: ['https://exemplo.com/foto1.jpg', 'https://exemplo.com/foto2.jpg'],
         });
 
       expect(res.status).toBe(200);
       expect(res.body.description).toBe('Pão fresquinho todo dia');
       expect(res.body.whatsappNumber).toBe('5521999998888');
       expect(res.body.menuUrl).toBe('https://cardapio.exemplo.com/trigo-dourado');
+      expect(res.body.photoUrls).toEqual([
+        'https://exemplo.com/foto1.jpg',
+        'https://exemplo.com/foto2.jpg',
+      ]);
+    });
+
+    itWithDb('retorna 422 com mais de 6 fotos', async () => {
+      const user = await createUser('patch-too-many-photos');
+      const place = await createUnclaimedPlace('Loja Fotos Demais');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ placeId: place.id });
+
+      const res = await request(app)
+        .patch(`/api/v1/business/places/${place.id}`)
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ photoUrls: Array.from({ length: 7 }, (_, i) => `https://exemplo.com/${i}.jpg`) });
+
+      expect(res.status).toBe(422);
+    });
+  });
+
+  describe('horário de funcionamento (/business/places/:placeId/hours)', () => {
+    it('GET retorna 401 sem token', async () => {
+      const res = await request(app).get('/api/v1/business/places/x/hours');
+      expect(res.status).toBe(401);
+    });
+
+    it('PUT retorna 401 sem token', async () => {
+      const res = await request(app).put('/api/v1/business/places/x/hours').send({ hours: [] });
+      expect(res.status).toBe(401);
+    });
+
+    itWithDb('retorna lista vazia para um place recém-reivindicado sem horário cadastrado', async () => {
+      const user = await createUser('hours-empty');
+      const place = await createUnclaimedPlace('Loja Sem Horário');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ placeId: place.id });
+
+      const res = await request(app)
+        .get(`/api/v1/business/places/${place.id}/hours`)
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual([]);
+    });
+
+    itWithDb('retorna 403 ao editar horário de um place de outro dono', async () => {
+      const owner = await createUser('hours-owner');
+      const stranger = await createUser('hours-stranger');
+      const place = await createUnclaimedPlace('Mercadinho Horário');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(owner.id)}`)
+        .send({ placeId: place.id });
+
+      const res = await request(app)
+        .put(`/api/v1/business/places/${place.id}/hours`)
+        .set('Authorization', `Bearer ${tokenFor(stranger.id)}`)
+        .send({ hours: [{ dayOfWeek: 1, opensAt: '09:00', closesAt: '18:00', isClosed: false }] });
+
+      expect(res.status).toBe(403);
+    });
+
+    itWithDb('retorna 422 para horário em formato inválido', async () => {
+      const user = await createUser('hours-invalid');
+      const place = await createUnclaimedPlace('Loja Horário Inválido');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ placeId: place.id });
+
+      const res = await request(app)
+        .put(`/api/v1/business/places/${place.id}/hours`)
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ hours: [{ dayOfWeek: 1, opensAt: '9h', closesAt: '18:00', isClosed: false }] });
+
+      expect(res.status).toBe(422);
+    });
+
+    itWithDb('grava e depois atualiza o horário de um dia (upsert)', async () => {
+      const user = await createUser('hours-upsert');
+      const place = await createUnclaimedPlace('Restaurante Horário Certo');
+
+      await request(app)
+        .post('/api/v1/business/claim')
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ placeId: place.id });
+
+      const first = await request(app)
+        .put(`/api/v1/business/places/${place.id}/hours`)
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ hours: [{ dayOfWeek: 1, opensAt: '09:00', closesAt: '18:00', isClosed: false }] });
+
+      expect(first.status).toBe(200);
+      expect(first.body.data).toEqual([
+        { dayOfWeek: 1, opensAt: '09:00', closesAt: '18:00', isClosed: false },
+      ]);
+
+      const second = await request(app)
+        .put(`/api/v1/business/places/${place.id}/hours`)
+        .set('Authorization', `Bearer ${tokenFor(user.id)}`)
+        .send({ hours: [{ dayOfWeek: 1, opensAt: '10:00', closesAt: '22:00', isClosed: false }] });
+
+      expect(second.status).toBe(200);
+      expect(second.body.data).toEqual([
+        { dayOfWeek: 1, opensAt: '10:00', closesAt: '22:00', isClosed: false },
+      ]);
     });
   });
 

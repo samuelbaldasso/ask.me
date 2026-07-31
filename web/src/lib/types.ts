@@ -20,6 +20,7 @@ export interface Place {
   website: string | null;
   whatsappNumber: string | null;
   menuUrl: string | null;
+  photoUrls: string[];
   isOpenNow: boolean | null;
   isFeatured: boolean;
 }
@@ -119,6 +120,7 @@ export interface BusinessPlace {
   website: string | null;
   whatsappNumber: string | null;
   menuUrl: string | null;
+  photoUrls: string[];
   acceptsPets: boolean;
   acceptsCards: boolean;
   hasParking: boolean;
@@ -160,7 +162,17 @@ export interface UpdatePlaceProfileInput {
   website?: string | null;
   whatsappNumber?: string | null;
   menuUrl?: string | null;
+  photoUrls?: string[];
   acceptsPets?: boolean;
   acceptsCards?: boolean;
   hasParking?: boolean;
 }
+
+export interface OpeningHour {
+  dayOfWeek: number; // 0=domingo, 6=sábado
+  opensAt: string; // "HH:MM"
+  closesAt: string; // "HH:MM"
+  isClosed: boolean;
+}
+
+export const WEEKDAY_LABELS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];

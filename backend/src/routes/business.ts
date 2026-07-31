@@ -6,6 +6,8 @@ import {
   getMyBusinessController,
   updatePlaceController,
   getPlaceStatsController,
+  getOpeningHoursController,
+  updateOpeningHoursController,
 } from '../controllers/businessController';
 
 const router: IRouter = Router();
@@ -30,5 +32,11 @@ router.patch('/places/:placeId', authenticate, updatePlaceController);
 
 // GET /business/places/:placeId/stats — relatório de visualizações/cliques
 router.get('/places/:placeId/stats', authenticate, getPlaceStatsController);
+
+// GET /business/places/:placeId/hours — horário de funcionamento atual
+router.get('/places/:placeId/hours', authenticate, getOpeningHoursController);
+
+// PUT /business/places/:placeId/hours { hours: [...] } — substitui o horário de um ou mais dias
+router.put('/places/:placeId/hours', authenticate, updateOpeningHoursController);
 
 export default router;

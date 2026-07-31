@@ -82,6 +82,20 @@ export default function PlaceDetailPage({
         <p className="leading-relaxed text-foreground/80">{place.description}</p>
       )}
 
+      {place.photoUrls.length > 0 && (
+        <div className="flex gap-3 overflow-x-auto pb-1">
+          {place.photoUrls.map((url) => (
+            // eslint-disable-next-line @next/next/no-img-element -- URLs arbitrárias cadastradas pelo lojista, sem domínio fixo para next/image
+            <img
+              key={url}
+              src={url}
+              alt={`Foto de ${place.name}`}
+              className="h-40 w-56 shrink-0 rounded-[20px] object-cover shadow-[0_6px_16px_rgba(124,58,237,0.06)]"
+            />
+          ))}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <ActionButton
           icon="🧭"

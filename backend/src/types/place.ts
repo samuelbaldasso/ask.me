@@ -37,6 +37,7 @@ export interface PlaceResult {
   website: string | null;
   whatsappNumber: string | null;
   menuUrl: string | null;
+  photoUrls: string[];
   isOpenNow: boolean | null; // null = sem horário cadastrado
   isFeatured: boolean; // dono do estabelecimento tem assinatura B2B ativa
 }

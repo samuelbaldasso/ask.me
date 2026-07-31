@@ -4,6 +4,7 @@ import type {
   BusinessPlace,
   ClaimableBusinessPlace,
   MyBusiness,
+  OpeningHour,
   PaginatedResult,
   Place,
   PlaceEventType,
@@ -99,4 +100,15 @@ export function updateBusinessPlace(
 
 export function getBusinessPlaceStats(placeId: string): Promise<PlaceStats> {
   return apiFetch(`/business/places/${placeId}/stats`);
+}
+
+export function getBusinessPlaceHours(placeId: string): Promise<{ data: OpeningHour[] }> {
+  return apiFetch(`/business/places/${placeId}/hours`);
+}
+
+export function updateBusinessPlaceHours(
+  placeId: string,
+  hours: OpeningHour[],
+): Promise<{ data: OpeningHour[] }> {
+  return apiFetch(`/business/places/${placeId}/hours`, { method: 'PUT', body: { hours } });
 }

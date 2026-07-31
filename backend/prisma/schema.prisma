@@ -91,6 +91,9 @@ model Place {
   whatsappNumber  String?  @map("whatsapp_number")
   // Link do cardápio (PDF, site do iFood/Cardápio Web, etc.)
   menuUrl         String?  @map("menu_url")
+  // URLs de fotos do estabelecimento, editáveis pelo lojista — sem upload
+  // próprio no MVP, o lojista cola links (ex: já hospedados no Google/Instagram).
+  photoUrls       String[] @default([]) @map("photo_urls")
   address         String
   city          String
   state         String   @default("SP")

@@ -58,7 +58,7 @@ export async function searchPlaces(
       `SELECT`,
       `  p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,`,
       `  p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,`,
-      `  p.whatsapp_number, p.menu_url,`,
+      `  p.whatsapp_number, p.menu_url, p.photo_urls,`,
       `  c.slug AS category_slug, c.label AS category_label,`,
       `  (s.id IS NOT NULL) AS is_featured,`,
       `  ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters`,
@@ -111,6 +111,7 @@ export async function searchPlaces(
       website: row.website,
       whatsappNumber: row.whatsapp_number,
       menuUrl: row.menu_url,
+      photoUrls: row.photo_urls,
       isOpenNow: hours.length > 0 ? isOpenNow(hours) : null,
       isFeatured: row.is_featured,
     };
@@ -148,7 +149,7 @@ export async function getPlacesByIds(
     SELECT
       p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,
       p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,
-      p.whatsapp_number, p.menu_url,
+      p.whatsapp_number, p.menu_url, p.photo_urls,
       c.slug AS category_slug, c.label AS category_label,
       (s.id IS NOT NULL) AS is_featured,
       ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters
@@ -185,6 +186,7 @@ export async function getPlacesByIds(
     website: row.website,
     whatsappNumber: row.whatsapp_number,
     menuUrl: row.menu_url,
+    photoUrls: row.photo_urls,
     isOpenNow: (hoursMap[row.id] ?? []).length > 0 ? isOpenNow(hoursMap[row.id]) : null,
     isFeatured: row.is_featured,
   }));
@@ -209,6 +211,7 @@ interface RawPlaceRow {
   website: string | null;
   whatsapp_number: string | null;
   menu_url: string | null;
+  photo_urls: string[];
   category_slug: string;
   category_label: string;
   is_featured: boolean;

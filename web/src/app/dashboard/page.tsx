@@ -5,19 +5,23 @@ import {
   claimBusinessPlace,
   createBillingPortalSession,
   createCheckoutSession,
+  getBusinessPlaceHours,
   getBusinessPlaceStats,
   getMyBusiness,
   searchClaimablePlaces,
   updateBusinessPlace,
+  updateBusinessPlaceHours,
 } from '@/lib/api/endpoints';
 import { RequireAuth } from '@/lib/auth/require-auth';
 import type {
   BusinessPlace,
   ClaimableBusinessPlace,
   MyBusiness,
+  OpeningHour,
   PlaceStats,
   UpdatePlaceProfileInput,
 } from '@/lib/types';
+import { WEEKDAY_LABELS } from '@/lib/types';
 
 type LoadStatus = 'loading' | 'loaded' | 'error';
 
@@ -171,10 +175,12 @@ function PlaceManageCard({
     website: place.website,
     whatsappNumber: place.whatsappNumber,
     menuUrl: place.menuUrl,
+    photoUrls: place.photoUrls,
     acceptsPets: place.acceptsPets,
     acceptsCards: place.acceptsCards,
     hasParking: place.hasParking,
   });
+  const [photoUrlsText, setPhotoUrlsText] = useState((place.photoUrls ?? []).join('\n'));
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'error'>('idle');
   const [stats, setStats] = useState<PlaceStats | null>(null);
 
@@ -189,7 +195,12 @@ function PlaceManageCard({
     e.preventDefault();
     setSaveStatus('saving');
     try {
-      await updateBusinessPlace(place.id, form);
+      const photoUrls = photoUrlsText
+        .split('\n')
+        .map((url) => url.trim())
+        .filter((url) => url.length > 0)
+        .slice(0, 6);
+      await updateBusinessPlace(place.id, { ...form, photoUrls });
       setSaveStatus('idle');
       onUpdated();
     } catch {
@@ -295,6 +306,17 @@ function PlaceManageCard({
               </label>
             </div>
 
+            <label className="flex flex-col gap-1 text-sm font-semibold text-[#171123]/80">
+              Fotos (um link por linha, até 6)
+              <textarea
+                value={photoUrlsText}
+                onChange={(e) => setPhotoUrlsText(e.target.value)}
+                rows={3}
+                placeholder={'https://...\nhttps://...'}
+                className="rounded-2xl bg-surface-dim px-4 py-3 text-sm font-normal text-[#171123] outline-none ring-primary/40 transition focus:ring-2"
+              />
+            </label>
+
             <div className="flex flex-wrap gap-4">
               <ToggleField
                 label="Aceita pets"
@@ -327,8 +349,114 @@ function PlaceManageCard({
               {saveStatus === 'saving' ? 'Salvando...' : 'Salvar alterações'}
             </button>
           </form>
+
+          <OpeningHoursEditor placeId={place.id} />
         </div>
       )}
+    </div>
+  );
+}
+
+const DEFAULT_HOURS: OpeningHour[] = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+  dayOfWeek,
+  opensAt: '09:00',
+  closesAt: '18:00',
+  isClosed: dayOfWeek === 0,
+}));
+
+function OpeningHoursEditor({ placeId }: { placeId: string }) {
+  const [hours, setHours] = useState<OpeningHour[] | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'error' | 'saved'>('idle');
+
+  useEffect(() => {
+    getBusinessPlaceHours(placeId)
+      .then(({ data }) => {
+        if (data.length === 0) {
+          setHours(DEFAULT_HOURS);
+          return;
+        }
+        const byDay = new Map(data.map((h) => [h.dayOfWeek, h]));
+        setHours(DEFAULT_HOURS.map((fallback) => byDay.get(fallback.dayOfWeek) ?? fallback));
+      })
+      .catch(() => setHours(DEFAULT_HOURS));
+  }, [placeId]);
+
+  const updateDay = (dayOfWeek: number, patch: Partial<OpeningHour>) => {
+    setHours((prev) =>
+      (prev ?? []).map((h) => (h.dayOfWeek === dayOfWeek ? { ...h, ...patch } : h)),
+    );
+  };
+
+  const save = async () => {
+    if (!hours) return;
+    setSaveStatus('saving');
+    try {
+      await updateBusinessPlaceHours(placeId, hours);
+      setSaveStatus('saved');
+    } catch {
+      setSaveStatus('error');
+    }
+  };
+
+  if (!hours) {
+    return <p className="text-sm text-[#171123]/60">Carregando horários...</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-3 border-t border-[#EDE7FB] pt-5">
+      <p className="text-xs font-bold uppercase tracking-wide text-[#171123]/40">
+        Horário de funcionamento
+      </p>
+      <div className="flex flex-col gap-2">
+        {hours.map((h) => (
+          <div key={h.dayOfWeek} className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="w-20 shrink-0 font-semibold text-[#171123]">
+              {WEEKDAY_LABELS[h.dayOfWeek]}
+            </span>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={!h.isClosed}
+                onChange={(e) => updateDay(h.dayOfWeek, { isClosed: !e.target.checked })}
+                className="h-4 w-4 accent-[color:var(--color-primary)]"
+              />
+              Aberto
+            </label>
+            {!h.isClosed && (
+              <>
+                <input
+                  type="time"
+                  value={h.opensAt}
+                  onChange={(e) => updateDay(h.dayOfWeek, { opensAt: e.target.value })}
+                  className="rounded-full bg-surface-dim px-3 py-1.5 text-sm outline-none ring-primary/40 focus:ring-2"
+                />
+                <span className="text-[#171123]/50">até</span>
+                <input
+                  type="time"
+                  value={h.closesAt}
+                  onChange={(e) => updateDay(h.dayOfWeek, { closesAt: e.target.value })}
+                  className="rounded-full bg-surface-dim px-3 py-1.5 text-sm outline-none ring-primary/40 focus:ring-2"
+                />
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {saveStatus === 'error' && (
+        <p className="text-sm font-semibold text-[#EF4444]">
+          Não foi possível salvar os horários. Tente novamente.
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={save}
+        disabled={saveStatus === 'saving'}
+        className="w-fit rounded-2xl border-2 border-primary px-6 py-2.5 text-sm font-bold text-primary transition hover:bg-primary/5 disabled:opacity-50"
+      >
+        {saveStatus === 'saving' ? 'Salvando...' : saveStatus === 'saved' ? 'Salvo ✓' : 'Salvar horários'}
+      </button>
     </div>
   );
 }

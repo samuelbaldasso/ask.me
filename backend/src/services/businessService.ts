@@ -24,6 +24,7 @@ export const updatePlaceBodySchema = z.object({
   website: z.string().max(255).nullable().optional(),
   whatsappNumber: z.string().max(30).nullable().optional(),
   menuUrl: z.string().max(255).nullable().optional(),
+  photoUrls: z.array(z.string().max(500)).max(6).optional(),
   acceptsPets: z.boolean().optional(),
   acceptsCards: z.boolean().optional(),
   hasParking: z.boolean().optional(),
@@ -39,6 +40,7 @@ const PLACE_SUMMARY_SELECT = {
   website: true,
   whatsappNumber: true,
   menuUrl: true,
+  photoUrls: true,
   acceptsPets: true,
   acceptsCards: true,
   hasParking: true,
@@ -190,6 +192,58 @@ export async function trackPlaceEvent(placeId: string, type: PlaceEventType): Pr
   if (!place) return; // silencioso — evita vazar existência de ids inválidos
 
   await prisma.placeEvent.create({ data: { placeId, type } });
+}
+
+// --- Horário de funcionamento ---
+
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const updateOpeningHoursBodySchema = z.object({
+  hours: z
+    .array(
+      z.object({
+        dayOfWeek: z.number().int().min(0).max(6),
+        opensAt: z.string().regex(TIME_REGEX, 'Formato esperado: HH:MM'),
+        closesAt: z.string().regex(TIME_REGEX, 'Formato esperado: HH:MM'),
+        isClosed: z.boolean(),
+      }),
+    )
+    .min(1)
+    .max(7)
+    .refine((hours) => new Set(hours.map((h) => h.dayOfWeek)).size === hours.length, {
+      message: 'dayOfWeek não pode se repetir',
+    }),
+});
+
+export async function getOpeningHours(userId: string, placeId: string) {
+  await assertOwnership(userId, placeId);
+
+  return prisma.openingHours.findMany({
+    where: { placeId },
+    select: { dayOfWeek: true, opensAt: true, closesAt: true, isClosed: true },
+    orderBy: { dayOfWeek: 'asc' },
+  });
+}
+
+/** Substitui o horário de um ou mais dias da semana (upsert por dayOfWeek). */
+export async function updateOpeningHours(
+  userId: string,
+  placeId: string,
+  hours: z.infer<typeof updateOpeningHoursBodySchema>['hours'],
+) {
+  await assertOwnership(userId, placeId);
+
+  await prisma.$transaction(
+    hours.map((h) =>
+      prisma.openingHours.upsert({
+        where: { placeId_dayOfWeek: { placeId, dayOfWeek: h.dayOfWeek } },
+        update: { opensAt: h.opensAt, closesAt: h.closesAt, isClosed: h.isClosed },
+        create: { placeId, dayOfWeek: h.dayOfWeek, opensAt: h.opensAt, closesAt: h.closesAt, isClosed: h.isClosed },
+      }),
+    ),
+  );
+
+  return getOpeningHours(userId, placeId);
 }
 
 export { BusinessServiceError };

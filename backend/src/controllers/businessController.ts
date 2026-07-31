@@ -6,9 +6,12 @@ import {
   getMyBusiness,
   updatePlaceProfile,
   getPlaceStats,
+  getOpeningHours,
+  updateOpeningHours,
   claimSearchQuerySchema,
   claimBodySchema,
   updatePlaceBodySchema,
+  updateOpeningHoursBodySchema,
 } from '../services/businessService';
 
 export async function searchClaimablePlacesController(
@@ -101,6 +104,42 @@ export async function getPlaceStatsController(
   try {
     const result = await getPlaceStats(req.user!.sub, req.params.placeId);
     res.status(StatusCodes.OK).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getOpeningHoursController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const result = await getOpeningHours(req.user!.sub, req.params.placeId);
+    res.status(StatusCodes.OK).json({ data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function updateOpeningHoursController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const parsed = updateOpeningHoursBodySchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        error: 'Parâmetros inválidos',
+        details: parsed.error.flatten().fieldErrors,
+      });
+      return;
+    }
+
+    const result = await updateOpeningHours(req.user!.sub, req.params.placeId, parsed.data.hours);
+    res.status(StatusCodes.OK).json({ data: result });
   } catch (err) {
     next(err);
   }
