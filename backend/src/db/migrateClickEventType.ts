@@ -5,16 +5,32 @@
 // ainda referenciado por linhas existentes, então este script precisa
 // rodar ANTES do push, remapeando os eventos antigos.
 //
-// Neste ponto do deploy o enum em produção AINDA é o antigo (só `view` e
-// `click`) — `prisma db push` só cria os novos valores depois. Por isso
-// precisamos adicionar `website_click` ao enum manualmente aqui antes de
-// poder gravar esse valor numa linha (Postgres não aceita um valor de enum
-// que ainda não existe no tipo). Mapeia para `website_click` por ser o
-// clique genérico mais próximo do comportamento antigo — não afeta o total
-// de cliques do relatório, só a quebra por tipo.
+// Fica permanentemente no preDeployCommand do Railway (ver railway.json)
+// como no-op depois que a migração já rodou uma vez — por isso PRECISA
+// checar se `click` ainda existe no enum antes de referenciá-lo. Depois do
+// primeiro `prisma db push` bem-sucedido, `click` é removido do tipo, e
+// comparar `type = 'click'` contra um enum que não tem mais esse valor
+// falha com "invalid input value for enum" (foi exatamente o que quebrou o
+// deploy em produção — a checagem abaixo existe por causa disso).
 import { prisma } from './prisma';
 
+async function legacyClickValueExists(): Promise<boolean> {
+  const rows = await prisma.$queryRawUnsafe<Array<{ exists: boolean }>>(
+    `SELECT EXISTS (
+       SELECT 1 FROM pg_enum e
+       JOIN pg_type t ON t.oid = e.enumtypid
+       WHERE t.typname = 'PlaceEventType' AND e.enumlabel = 'click'
+     ) AS exists`,
+  );
+  return rows[0]?.exists ?? false;
+}
+
 async function main() {
+  if (!(await legacyClickValueExists())) {
+    console.log("↷ Enum PlaceEventType já não tem o valor legado 'click' — nada a migrar.");
+    return;
+  }
+
   await prisma.$executeRawUnsafe(
     `ALTER TYPE "PlaceEventType" ADD VALUE IF NOT EXISTS 'website_click'`,
   );
