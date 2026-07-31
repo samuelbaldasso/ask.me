@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
     "db:seed": "tsx src/db/seed.ts",
+    "db:make-admin": "tsx src/db/makeAdmin.ts",
     "places:enrich": "tsx src/db/enrichPlaces.ts",
     "places:discover": "tsx src/db/discoverPlaces.ts",
     "test": "jest --runInBand",

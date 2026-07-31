@@ -32,6 +32,7 @@ export interface AuthResult {
     email: string;
     name: string | null;
     avatarUrl: string | null;
+    isAdmin: boolean;
   };
 }
 
@@ -114,6 +115,7 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResult> {
       email: user.email,
       name: user.name,
       avatarUrl: user.avatarUrl,
+      isAdmin: user.isAdmin,
     },
   };
 }

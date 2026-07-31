@@ -1,8 +1,10 @@
 import { apiFetch } from './client';
 import type {
+  AdminClaim,
   AskResult,
   BusinessPlace,
   ClaimableBusinessPlace,
+  ClaimStatus,
   MyBusiness,
   OpeningHour,
   PaginatedResult,
@@ -83,7 +85,7 @@ export function searchClaimablePlaces(
   return apiFetch('/business/places/search', { query: { q } });
 }
 
-export function claimBusinessPlace(placeId: string): Promise<{ claimed: boolean }> {
+export function claimBusinessPlace(placeId: string): Promise<{ status: ClaimStatus }> {
   return apiFetch('/business/claim', { method: 'POST', body: { placeId } });
 }
 
@@ -111,4 +113,18 @@ export function updateBusinessPlaceHours(
   hours: OpeningHour[],
 ): Promise<{ data: OpeningHour[] }> {
   return apiFetch(`/business/places/${placeId}/hours`, { method: 'PUT', body: { hours } });
+}
+
+// --- Painel admin (/admin) ---
+
+export function listPendingClaims(): Promise<{ data: AdminClaim[] }> {
+  return apiFetch('/admin/claims');
+}
+
+export function approveClaim(claimId: string): Promise<{ approved: boolean }> {
+  return apiFetch(`/admin/claims/${claimId}/approve`, { method: 'POST' });
+}
+
+export function rejectClaim(claimId: string): Promise<{ rejected: boolean }> {
+  return apiFetch(`/admin/claims/${claimId}/reject`, { method: 'POST' });
 }

@@ -51,12 +51,15 @@ const PLACE_SUMMARY_SELECT = {
 /**
  * Busca estabelecimentos por nome para o lojista encontrar o próprio
  * negócio na base já importada e reivindicá-lo — não filtra por dono, mas o
- * client sinaliza `isClaimed`/`isMine` para orientar a UI.
+ * client sinaliza `isClaimed`/`isMine`/`myClaimStatus` para orientar a UI.
  */
 export async function searchClaimablePlaces(query: string, userId: string) {
   const places = await prisma.place.findMany({
     where: { name: { contains: query, mode: 'insensitive' }, isActive: true },
-    select: PLACE_SUMMARY_SELECT,
+    select: {
+      ...PLACE_SUMMARY_SELECT,
+      claims: { where: { userId }, select: { status: true } },
+    },
     take: 20,
     orderBy: { name: 'asc' },
   });
@@ -65,16 +68,17 @@ export async function searchClaimablePlaces(query: string, userId: string) {
     ...p,
     isClaimed: p.ownerId !== null,
     isMine: p.ownerId === userId,
+    myClaimStatus: p.claims[0]?.status ?? null,
+    claims: undefined,
     ownerId: undefined,
   }));
 }
 
 /**
- * Vincula um Place sem dono à conta do lojista logado. MVP não faz
- * verificação forte de propriedade (ex: confirmação por telefone/documento)
- * — qualquer usuário pode reivindicar um estabelecimento ainda não
- * reivindicado, mesma lógica adotada por diretórios como Google Meu Negócio
- * no início antes da verificação por correio.
+ * Cria um pedido de reivindicação de um Place sem dono — não vincula a
+ * conta automaticamente. Fica com status "pending" até um admin aprovar em
+ * /admin/claims (ver adminService), pra evitar que qualquer usuário
+ * logado assuma a gestão de um estabelecimento alheio.
  */
 export async function claimPlace(userId: string, placeId: string) {
   const place = await prisma.place.findUnique({ where: { id: placeId }, select: { ownerId: true } });
@@ -83,15 +87,23 @@ export async function claimPlace(userId: string, placeId: string) {
     throw new BusinessServiceError('Estabelecimento não encontrado', 404);
   }
 
-  if (place.ownerId && place.ownerId !== userId) {
+  if (place.ownerId) {
+    if (place.ownerId === userId) return { status: 'approved' as const };
     throw new BusinessServiceError('Esse estabelecimento já foi reivindicado por outra conta', 409);
   }
 
-  await prisma.place.update({ where: { id: placeId }, data: { ownerId: userId } });
+  const claim = await prisma.businessClaim.upsert({
+    where: { placeId_userId: { placeId, userId } },
+    update: { status: 'pending', reviewedAt: null },
+    create: { placeId, userId },
+    select: { status: true },
+  });
+
+  return claim;
 }
 
 export async function getMyBusiness(userId: string) {
-  const [places, subscription] = await Promise.all([
+  const [places, subscription, pendingClaims] = await Promise.all([
     prisma.place.findMany({
       where: { ownerId: userId },
       select: PLACE_SUMMARY_SELECT,
@@ -101,11 +113,22 @@ export async function getMyBusiness(userId: string) {
       where: { userId },
       select: { status: true, currentPeriodEnd: true, cancelAtPeriodEnd: true },
     }),
+    prisma.businessClaim.findMany({
+      where: { userId, status: { in: ['pending', 'rejected'] } },
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        place: { select: { id: true, name: true, address: true, city: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
   ]);
 
   return {
     places: places.map((p) => ({ ...p, ownerId: undefined })),
     subscription: subscription ?? { status: 'none' as const, currentPeriodEnd: null, cancelAtPeriodEnd: false },
+    pendingClaims,
   };
 }
 

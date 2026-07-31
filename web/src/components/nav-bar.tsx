@@ -27,6 +27,8 @@ export function NavBar() {
 
   const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname?.startsWith(href));
 
+  const navLinks = user?.isAdmin ? [...links, { href: '/admin', label: 'Admin' }] : links;
+
   const renderAuthAction = (onNavigate?: () => void) =>
     isAuthenticated ? (
       <button
@@ -63,7 +65,7 @@ export function NavBar() {
         </Link>
 
         <nav className="hidden items-center gap-x-6 text-sm font-semibold sm:flex">
-          {links.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -115,7 +117,7 @@ export function NavBar() {
         }`}
       >
         <nav className="flex flex-col gap-1 border-t border-white/15 px-4 pb-4 pt-2 text-base font-semibold">
-          {links.map((link) => (
+          {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

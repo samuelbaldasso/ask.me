@@ -86,6 +86,7 @@ export interface AppUser {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  isAdmin: boolean;
 }
 
 export type SubscriptionStatusValue =
@@ -127,14 +128,41 @@ export interface BusinessPlace {
   category: PlaceCategory;
 }
 
+export type ClaimStatus = 'pending' | 'approved' | 'rejected';
+
 export interface ClaimableBusinessPlace extends BusinessPlace {
   isClaimed: boolean;
   isMine: boolean;
+  myClaimStatus: ClaimStatus | null;
+}
+
+export interface PlaceSummary {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+}
+
+export interface PendingClaim {
+  id: string;
+  status: ClaimStatus;
+  createdAt: string;
+  place: PlaceSummary;
 }
 
 export interface MyBusiness {
   places: BusinessPlace[];
   subscription: SubscriptionStatus;
+  pendingClaims: PendingClaim[];
+}
+
+// --- Fila de revisão do admin (/admin) ---
+
+export interface AdminClaim {
+  id: string;
+  createdAt: string;
+  user: { id: string; name: string | null; email: string };
+  place: PlaceSummary;
 }
 
 export type ClickEventType =

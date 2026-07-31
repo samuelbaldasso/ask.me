@@ -28,10 +28,14 @@ model User {
   name          String?
   avatarUrl     String?  @map("avatar_url")
   googleId      String   @unique @map("google_id")
+  // Acesso à fila de revisão de reivindicações (/admin) — não há fluxo de
+  // cadastro para isso, é setado manualmente via script (ver db/makeAdmin.ts).
+  isAdmin       Boolean  @default(false) @map("is_admin")
 
   subscription  Subscription?
   favorites     Favorite[]
   ownedPlaces   Place[]
+  businessClaims BusinessClaim[]
 
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt      @map("updated_at")
@@ -112,9 +116,10 @@ model Place {
   categoryId  Int      @map("category_id")
   category    Category @relation(fields: [categoryId], references: [id])
 
-  // Dono do estabelecimento (lojista) — null até ser reivindicado via
-  // POST /business/claim. Um Place sem owner é gerenciado só pela busca
-  // pública (dados vindos do Google Places / seeds).
+  // Dono do estabelecimento (lojista) — null até um BusinessClaim ser
+  // aprovado por um admin (ver POST /admin/claims/:id/approve). Um Place
+  // sem owner é gerenciado só pela busca pública (dados vindos do Google
+  // Places / seeds).
   ownerId     String?  @map("owner_id")
   owner       User?    @relation(fields: [ownerId], references: [id])
 
@@ -122,6 +127,7 @@ model Place {
   attributes  PlaceAttribute[]
   favoritedBy Favorite[]
   events      PlaceEvent[]
+  claims      BusinessClaim[]
 
   acceptsPets   Boolean @default(false) @map("accepts_pets")
   acceptsCards  Boolean @default(true)  @map("accepts_cards")
@@ -135,6 +141,31 @@ model Place {
   @@index([isActive])
   @@index([ownerId])
   @@map("places")
+}
+
+enum ClaimStatus {
+  pending
+  approved
+  rejected
+}
+
+// Pedido de reivindicação de um estabelecimento (POST /business/claim).
+// Não vincula o Place automaticamente — fica pendente até um admin
+// aprovar em /admin/claims (ver businessService/adminService). Ao aprovar,
+// os demais claims pendentes do mesmo place são rejeitados automaticamente.
+model BusinessClaim {
+  id         String      @id @default(cuid())
+  placeId    String      @map("place_id")
+  place      Place       @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  userId     String      @map("user_id")
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     ClaimStatus @default(pending)
+  createdAt  DateTime    @default(now()) @map("created_at")
+  reviewedAt DateTime?   @map("reviewed_at")
+
+  @@unique([placeId, userId])
+  @@index([status])
+  @@map("business_claims")
 }
 
 // Eventos rastreados no perfil do lojista — cada ação crítica (ligar,

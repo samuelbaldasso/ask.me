@@ -89,6 +89,33 @@ function DashboardBody() {
         </div>
       )}
 
+      {business.pendingClaims.length > 0 && (
+        <div className="flex flex-col gap-3 rounded-[28px] bg-white p-6 shadow-[0_10px_30px_rgba(124,58,237,0.08)]">
+          <h2 className="text-lg font-extrabold text-[#171123]">Reivindicações enviadas</h2>
+          <div className="flex flex-col divide-y divide-[#EDE7FB]">
+            {business.pendingClaims.map((claim) => (
+              <div key={claim.id} className="flex items-center justify-between gap-3 py-3">
+                <div>
+                  <p className="font-bold text-[#171123]">{claim.place.name}</p>
+                  <p className="text-sm text-[#171123]/60">
+                    {claim.place.address}, {claim.place.city}
+                  </p>
+                </div>
+                {claim.status === 'pending' ? (
+                  <span className="shrink-0 text-sm font-semibold text-[#C2410C]">
+                    Aguardando aprovação
+                  </span>
+                ) : (
+                  <span className="shrink-0 text-sm font-semibold text-[#EF4444]">
+                    Não aprovado
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <ClaimSection onClaimed={reload} />
     </div>
   );
@@ -516,9 +543,18 @@ function ClaimSection({ onClaimed }: { onClaimed: () => void }) {
   const claim = async (placeId: string) => {
     setClaimingId(placeId);
     try {
-      await claimBusinessPlace(placeId);
+      const { status: claimStatus } = await claimBusinessPlace(placeId);
       setResults((prev) =>
-        prev.map((p) => (p.id === placeId ? { ...p, isClaimed: true, isMine: true } : p)),
+        prev.map((p) =>
+          p.id === placeId
+            ? {
+                ...p,
+                isMine: claimStatus === 'approved',
+                isClaimed: claimStatus === 'approved',
+                myClaimStatus: claimStatus,
+              }
+            : p,
+        ),
       );
       onClaimed();
     } catch {
@@ -533,8 +569,8 @@ function ClaimSection({ onClaimed }: { onClaimed: () => void }) {
       <div>
         <h2 className="text-lg font-extrabold text-[#171123]">Reivindicar meu negócio</h2>
         <p className="mt-1 text-sm text-[#171123]/70">
-          Encontre seu estabelecimento na nossa base e vincule à sua conta para
-          gerenciar o perfil e ver relatórios.
+          Encontre seu estabelecimento na nossa base e envie o pedido de
+          vínculo — nossa equipe revisa e aprova em até alguns dias.
         </p>
       </div>
 
@@ -574,6 +610,10 @@ function ClaimSection({ onClaimed }: { onClaimed: () => void }) {
                 <span className="shrink-0 text-sm font-semibold text-[#171123]/40">
                   Já reivindicado
                 </span>
+              ) : place.myClaimStatus === 'pending' ? (
+                <span className="shrink-0 text-sm font-semibold text-[#C2410C]">
+                  Aguardando aprovação
+                </span>
               ) : (
                 <button
                   type="button"
@@ -581,7 +621,11 @@ function ClaimSection({ onClaimed }: { onClaimed: () => void }) {
                   disabled={claimingId === place.id}
                   className="shrink-0 rounded-full border-2 border-primary px-4 py-2 text-sm font-bold text-primary transition hover:bg-primary/5 disabled:opacity-50"
                 >
-                  {claimingId === place.id ? 'Vinculando...' : 'Esse é o meu negócio'}
+                  {claimingId === place.id
+                    ? 'Enviando...'
+                    : place.myClaimStatus === 'rejected'
+                      ? 'Tentar novamente'
+                      : 'Esse é o meu negócio'}
                 </button>
               )}
             </div>

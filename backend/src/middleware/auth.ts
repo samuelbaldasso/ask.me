@@ -77,3 +77,27 @@ export async function requireActiveSubscription(
 
   next();
 }
+
+/**
+ * Restringe a rota a usuários com `isAdmin = true` — usar sempre depois de
+ * `authenticate`. Não há fluxo de cadastro para virar admin; é setado
+ * manualmente via script (ver src/db/makeAdmin.ts). Usado pela fila de
+ * revisão de reivindicações de estabelecimento (/admin/claims).
+ */
+export async function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.sub },
+    select: { isAdmin: true },
+  });
+
+  if (!user?.isAdmin) {
+    res.status(StatusCodes.FORBIDDEN).json({ error: 'Acesso restrito a administradores' });
+    return;
+  }
+
+  next();
+}

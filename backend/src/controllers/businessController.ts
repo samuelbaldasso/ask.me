@@ -53,8 +53,8 @@ export async function claimPlaceController(
       return;
     }
 
-    await claimPlace(req.user!.sub, parsed.data.placeId);
-    res.status(StatusCodes.OK).json({ claimed: true });
+    const result = await claimPlace(req.user!.sub, parsed.data.placeId);
+    res.status(StatusCodes.OK).json(result);
   } catch (err) {
     next(err);
   }
