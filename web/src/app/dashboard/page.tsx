@@ -169,6 +169,8 @@ function PlaceManageCard({
     description: place.description,
     phone: place.phone,
     website: place.website,
+    whatsappNumber: place.whatsappNumber,
+    menuUrl: place.menuUrl,
     acceptsPets: place.acceptsPets,
     acceptsCards: place.acceptsCards,
     hasParking: place.hasParking,
@@ -217,11 +219,25 @@ function PlaceManageCard({
       {expanded && (
         <div className="flex flex-col gap-6 border-t border-[#EDE7FB] px-6 py-5">
           {stats && (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatTile label="Visualizações (30d)" value={stats.viewsLast30Days} />
-              <StatTile label="Cliques (30d)" value={stats.clicksLast30Days} />
-              <StatTile label="Visualizações (total)" value={stats.viewsTotal} />
-              <StatTile label="Cliques (total)" value={stats.clicksTotal} />
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatTile label="Visualizações (30d)" value={stats.viewsLast30Days} />
+                <StatTile label="Cliques (30d)" value={stats.clicksLast30Days} />
+                <StatTile label="Visualizações (total)" value={stats.viewsTotal} />
+                <StatTile label="Cliques (total)" value={stats.clicksTotal} />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wide text-[#171123]/40">
+                  Cliques por ação (últimos 30 dias)
+                </p>
+                <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                  <StatTile label="Telefone" value={stats.clicksByTypeLast30Days.phone_click} />
+                  <StatTile label="WhatsApp" value={stats.clicksByTypeLast30Days.whatsapp_click} />
+                  <StatTile label="Site" value={stats.clicksByTypeLast30Days.website_click} />
+                  <StatTile label="Ver rota" value={stats.clicksByTypeLast30Days.route_click} />
+                  <StatTile label="Cardápio" value={stats.clicksByTypeLast30Days.menu_click} />
+                </div>
+              </div>
             </div>
           )}
 
@@ -252,6 +268,27 @@ function PlaceManageCard({
                 <input
                   value={form.website ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
+                  placeholder="https://..."
+                  className="rounded-full bg-surface-dim px-4 py-2.5 text-sm font-normal text-[#171123] outline-none ring-primary/40 transition focus:ring-2"
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <label className="flex flex-1 flex-col gap-1 text-sm font-semibold text-[#171123]/80">
+                WhatsApp
+                <input
+                  value={form.whatsappNumber ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, whatsappNumber: e.target.value }))}
+                  placeholder="(00) 00000-0000"
+                  className="rounded-full bg-surface-dim px-4 py-2.5 text-sm font-normal text-[#171123] outline-none ring-primary/40 transition focus:ring-2"
+                />
+              </label>
+              <label className="flex flex-1 flex-col gap-1 text-sm font-semibold text-[#171123]/80">
+                Link do cardápio
+                <input
+                  value={form.menuUrl ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, menuUrl: e.target.value }))}
                   placeholder="https://..."
                   className="rounded-full bg-surface-dim px-4 py-2.5 text-sm font-normal text-[#171123] outline-none ring-primary/40 transition focus:ring-2"
                 />

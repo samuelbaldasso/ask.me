@@ -39,6 +39,12 @@ export default function PlaceDetailPage({
   const style = categoryStyleForSlug(place.category.slug);
   const isOpen = place.isOpenNow;
 
+  const routeHref = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`;
+  const whatsappNumber = place.whatsappNumber ?? place.phone;
+  const whatsappHref = whatsappNumber
+    ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`
+    : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4 rounded-[28px] bg-gradient-to-br from-primary to-[#ec4899] p-8 text-white">
@@ -76,6 +82,31 @@ export default function PlaceDetailPage({
         <p className="leading-relaxed text-foreground/80">{place.description}</p>
       )}
 
+      <div className="flex flex-wrap gap-2">
+        <ActionButton
+          icon="🧭"
+          label="Ver rota"
+          href={routeHref}
+          onClick={() => trackPlaceEvent(id, 'route_click').catch(() => {})}
+        />
+        {whatsappHref && (
+          <ActionButton
+            icon="💬"
+            label="WhatsApp"
+            href={whatsappHref}
+            onClick={() => trackPlaceEvent(id, 'whatsapp_click').catch(() => {})}
+          />
+        )}
+        {place.menuUrl && (
+          <ActionButton
+            icon="📋"
+            label="Ver cardápio"
+            href={place.menuUrl}
+            onClick={() => trackPlaceEvent(id, 'menu_click').catch(() => {})}
+          />
+        )}
+      </div>
+
       <div className="divide-y divide-[#EDE7FB] rounded-[20px] bg-white px-2 shadow-[0_6px_16px_rgba(124,58,237,0.06)]">
         <InfoRow icon="📍" text={`${place.address}, ${place.city}`} />
         <InfoRow icon="🧭" text={`A ${distanceLabel(place.distanceMeters)} de você`} />
@@ -84,7 +115,7 @@ export default function PlaceDetailPage({
             icon="📞"
             text={place.phone}
             href={`tel:${place.phone}`}
-            onClick={() => trackPlaceEvent(id, 'click').catch(() => {})}
+            onClick={() => trackPlaceEvent(id, 'phone_click').catch(() => {})}
           />
         )}
         {place.website && (
@@ -93,7 +124,7 @@ export default function PlaceDetailPage({
             text={place.website}
             href={place.website}
             external
-            onClick={() => trackPlaceEvent(id, 'click').catch(() => {})}
+            onClick={() => trackPlaceEvent(id, 'website_click').catch(() => {})}
           />
         )}
       </div>
@@ -104,6 +135,31 @@ export default function PlaceDetailPage({
         {place.hasParking && <Tag label="Estacionamento" />}
       </div>
     </div>
+  );
+}
+
+function ActionButton({
+  icon,
+  label,
+  href,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  href: string;
+  onClick?: () => void;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={onClick}
+      className="flex items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
+    >
+      <span aria-hidden>{icon}</span>
+      {label}
+    </a>
   );
 }
 

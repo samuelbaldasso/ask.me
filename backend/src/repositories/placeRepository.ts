@@ -58,6 +58,7 @@ export async function searchPlaces(
       `SELECT`,
       `  p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,`,
       `  p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,`,
+      `  p.whatsapp_number, p.menu_url,`,
       `  c.slug AS category_slug, c.label AS category_label,`,
       `  (s.id IS NOT NULL) AS is_featured,`,
       `  ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters`,
@@ -108,6 +109,8 @@ export async function searchPlaces(
       hasParking: row.has_parking,
       phone: row.phone,
       website: row.website,
+      whatsappNumber: row.whatsapp_number,
+      menuUrl: row.menu_url,
       isOpenNow: hours.length > 0 ? isOpenNow(hours) : null,
       isFeatured: row.is_featured,
     };
@@ -145,6 +148,7 @@ export async function getPlacesByIds(
     SELECT
       p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,
       p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,
+      p.whatsapp_number, p.menu_url,
       c.slug AS category_slug, c.label AS category_label,
       (s.id IS NOT NULL) AS is_featured,
       ST_Distance(p.location, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) AS distance_meters
@@ -179,6 +183,8 @@ export async function getPlacesByIds(
     hasParking: row.has_parking,
     phone: row.phone,
     website: row.website,
+    whatsappNumber: row.whatsapp_number,
+    menuUrl: row.menu_url,
     isOpenNow: (hoursMap[row.id] ?? []).length > 0 ? isOpenNow(hoursMap[row.id]) : null,
     isFeatured: row.is_featured,
   }));
@@ -201,6 +207,8 @@ interface RawPlaceRow {
   has_parking: boolean;
   phone: string | null;
   website: string | null;
+  whatsapp_number: string | null;
+  menu_url: string | null;
   category_slug: string;
   category_label: string;
   is_featured: boolean;

@@ -1,6 +1,6 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "deploy": {
-    "preDeployCommand": "npx prisma db push --accept-data-loss --skip-generate && npx tsx src/db/restorePostgis.ts"
+    "preDeployCommand": "npx tsx src/db/migrateClickEventType.ts && npx prisma db push --accept-data-loss --skip-generate && npx tsx src/db/restorePostgis.ts"
   }
 }

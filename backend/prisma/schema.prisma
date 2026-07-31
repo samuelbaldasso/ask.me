@@ -81,12 +81,17 @@ model Category {
 }
 
 model Place {
-  id            String   @id @default(cuid())
-  name          String
-  description   String?
-  phone         String?
-  website       String?
-  address       String
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  phone           String?
+  website         String?
+  // Número de WhatsApp para contato direto (formato internacional, ex:
+  // "5522999999999") — pode diferir do telefone fixo em `phone`.
+  whatsappNumber  String?  @map("whatsapp_number")
+  // Link do cardápio (PDF, site do iFood/Cardápio Web, etc.)
+  menuUrl         String?  @map("menu_url")
+  address         String
   city          String
   state         String   @default("SP")
   zipCode       String?  @map("zip_code")
@@ -129,14 +134,21 @@ model Place {
   @@map("places")
 }
 
+// Eventos rastreados no perfil do lojista — cada ação crítica (ligar,
+// chamar no WhatsApp, ver rota, ver cardápio, abrir site) é um tipo
+// separado para o relatório de valor provar ao lojista que o sistema
+// funciona (ver docs do plano de ação B2B, Fase 4).
 enum PlaceEventType {
   view
-  click
+  phone_click
+  whatsapp_click
+  website_click
+  route_click
+  menu_click
 }
 
-// Log de eventos usado para o relatório do painel do lojista (visualizações
-// nas buscas/detalhe e cliques em telefone/site). Agregado sob demanda em
-// getPlaceStats — sem tabela de contadores pré-agregados no MVP.
+// Log de eventos usado para o relatório do painel do lojista. Agregado sob
+// demanda em getPlaceStats — sem tabela de contadores pré-agregados no MVP.
 model PlaceEvent {
   id        String         @id @default(cuid())
   placeId   String         @map("place_id")

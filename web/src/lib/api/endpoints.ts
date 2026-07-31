@@ -6,6 +6,7 @@ import type {
   MyBusiness,
   PaginatedResult,
   Place,
+  PlaceEventType,
   PlaceStats,
   SearchFilters,
   SubscriptionStatus,
@@ -69,7 +70,7 @@ export function createBillingPortalSession(): Promise<{ url: string }> {
   return apiFetch('/subscriptions/portal', { method: 'POST' });
 }
 
-export function trackPlaceEvent(placeId: string, type: 'view' | 'click'): Promise<void> {
+export function trackPlaceEvent(placeId: string, type: PlaceEventType): Promise<void> {
   return apiFetch(`/places/${placeId}/track`, { method: 'POST', body: { type } });
 }
 

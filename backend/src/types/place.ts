@@ -35,6 +35,8 @@ export interface PlaceResult {
   hasParking: boolean;
   phone: string | null;
   website: string | null;
+  whatsappNumber: string | null;
+  menuUrl: string | null;
   isOpenNow: boolean | null; // null = sem horário cadastrado
   isFeatured: boolean; // dono do estabelecimento tem assinatura B2B ativa
 }

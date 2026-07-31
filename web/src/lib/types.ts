@@ -18,6 +18,8 @@ export interface Place {
   hasParking: boolean;
   phone: string | null;
   website: string | null;
+  whatsappNumber: string | null;
+  menuUrl: string | null;
   isOpenNow: boolean | null;
   isFeatured: boolean;
 }
@@ -115,6 +117,8 @@ export interface BusinessPlace {
   city: string;
   phone: string | null;
   website: string | null;
+  whatsappNumber: string | null;
+  menuUrl: string | null;
   acceptsPets: boolean;
   acceptsCards: boolean;
   hasParking: boolean;
@@ -131,18 +135,31 @@ export interface MyBusiness {
   subscription: SubscriptionStatus;
 }
 
+export type ClickEventType =
+  | 'phone_click'
+  | 'whatsapp_click'
+  | 'website_click'
+  | 'route_click'
+  | 'menu_click';
+
+export type PlaceEventType = 'view' | ClickEventType;
+
 export interface PlaceStats {
   windowDays: number;
   viewsTotal: number;
   clicksTotal: number;
   viewsLast30Days: number;
   clicksLast30Days: number;
+  clicksByType: Record<ClickEventType, number>;
+  clicksByTypeLast30Days: Record<ClickEventType, number>;
 }
 
 export interface UpdatePlaceProfileInput {
   description?: string | null;
   phone?: string | null;
   website?: string | null;
+  whatsappNumber?: string | null;
+  menuUrl?: string | null;
   acceptsPets?: boolean;
   acceptsCards?: boolean;
   hasParking?: boolean;
