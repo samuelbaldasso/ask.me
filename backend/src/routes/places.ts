@@ -1,5 +1,9 @@
 import { Router, IRouter } from 'express';
-import { searchPlacesController, trackPlaceEventController } from '../controllers/placesController';
+import {
+  searchPlacesController,
+  trackPlaceEventController,
+  getPlaceByIdController,
+} from '../controllers/placesController';
 
 const router: IRouter = Router();
 
@@ -17,6 +21,13 @@ const router: IRouter = Router();
  *   offset      (opcional)   — deslocamento para paginação (default: 0)
  */
 router.get('/', searchPlacesController);
+
+/**
+ * GET /places/:id
+ * Detalhe público de um estabelecimento, sem exigir localização do
+ * visitante. Usado pela página de detalhe do site (SSR/metadata/SEO).
+ */
+router.get('/:id', getPlaceByIdController);
 
 /**
  * POST /places/:id/track

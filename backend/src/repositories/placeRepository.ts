@@ -192,6 +192,61 @@ export async function getPlacesByIds(
   }));
 }
 
+/**
+ * Busca um único place por id, sem ponto de origem — usado pela página
+ * pública de detalhe (SEO/metadata), que precisa renderizar mesmo sem a
+ * localização do visitante. `distanceMeters` vem sempre 0 nesse caso.
+ */
+export async function getPlaceById(id: string): Promise<PlaceResult | null> {
+  const rows = await prisma.$queryRawUnsafe<RawPlaceRow[]>(
+    `
+    SELECT
+      p.id, p.name, p.description, p.address, p.city, p.lat, p.lng,
+      p.accepts_pets, p.accepts_cards, p.has_parking, p.phone, p.website,
+      p.whatsapp_number, p.menu_url, p.photo_urls,
+      c.slug AS category_slug, c.label AS category_label,
+      (s.id IS NOT NULL) AS is_featured,
+      0 AS distance_meters
+    FROM places p
+    JOIN categories c ON c.id = p.category_id
+    LEFT JOIN subscriptions s ON s.user_id = p.owner_id AND s.status = 'active'
+    WHERE p.id = $1 AND p.is_active = true
+    `,
+    id,
+  );
+
+  const row = rows[0];
+  if (!row) return null;
+
+  const hoursMap = await fetchOpeningHoursMap([row.id]);
+  const hours = hoursMap[row.id] ?? [];
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    address: row.address,
+    city: row.city,
+    lat: row.lat,
+    lng: row.lng,
+    distanceMeters: 0,
+    category: {
+      slug: row.category_slug,
+      label: row.category_label,
+    },
+    acceptsPets: row.accepts_pets,
+    acceptsCards: row.accepts_cards,
+    hasParking: row.has_parking,
+    phone: row.phone,
+    website: row.website,
+    whatsappNumber: row.whatsapp_number,
+    menuUrl: row.menu_url,
+    photoUrls: row.photo_urls,
+    isOpenNow: hours.length > 0 ? isOpenNow(hours) : null,
+    isFeatured: row.is_featured,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Helpers privados
 // ---------------------------------------------------------------------------

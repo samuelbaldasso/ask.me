@@ -47,3 +47,13 @@ export async function searchPlacesService(
 
   return searchPlaces(filters);
 }
+
+/**
+ * Busca um place por id para a página pública de detalhe — usada para SEO
+ * (metadata/structured data) e para carregar diretamente por URL, sem
+ * depender de o visitante ter passado pela listagem antes.
+ */
+export async function getPlaceByIdService(id: string): Promise<PlaceResult | null> {
+  const { getPlaceById } = await import('../repositories/placeRepository');
+  return getPlaceById(id);
+}

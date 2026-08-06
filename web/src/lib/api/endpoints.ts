@@ -24,6 +24,10 @@ export function searchPlaces(
   return apiFetch<PaginatedResult<Place>>('/places', { query: toQuery(filters) });
 }
 
+export function getPlace(id: string): Promise<Place> {
+  return apiFetch<Place>(`/places/${id}`);
+}
+
 export function ask(query: string, lat: number, lng: number): Promise<AskResult> {
   return apiFetch<AskResult>('/ask', { method: 'POST', body: { query, lat, lng } });
 }

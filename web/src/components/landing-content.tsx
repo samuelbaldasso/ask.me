@@ -77,10 +77,11 @@ export function LandingContent({ onNavigate }: { onNavigate?: () => void }) {
           pessoas te encontraram — assine para aparecer em destaque.
         </p>
         <Link
-          href="/dashboard"
+          href="/anuncie"
+          onClick={onNavigate}
           className="mt-2 rounded-2xl border-2 border-primary px-6 py-3 font-bold text-primary transition hover:bg-primary/5"
         >
-          Painel do lojista
+          Anuncie seu negócio
         </Link>
       </section>
     </div>

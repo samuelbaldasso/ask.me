@@ -1,7 +1,26 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { searchPlacesService, searchQuerySchema } from '../services/placeService';
+import { searchPlacesService, searchQuerySchema, getPlaceByIdService } from '../services/placeService';
 import { trackPlaceEvent, trackEventBodySchema } from '../services/businessService';
+
+export async function getPlaceByIdController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const place = await getPlaceByIdService(req.params.id);
+
+    if (!place) {
+      res.status(StatusCodes.NOT_FOUND).json({ error: 'Estabelecimento não encontrado' });
+      return;
+    }
+
+    res.status(StatusCodes.OK).json(place);
+  } catch (err) {
+    next(err);
+  }
+}
 
 export async function searchPlacesController(
   req: Request,

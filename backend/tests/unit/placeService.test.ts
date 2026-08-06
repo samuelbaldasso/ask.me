@@ -35,3 +35,57 @@ describe('searchQuerySchema', () => {
     if (result.success) expect(result.data.openNow).toBe(false);
   });
 });
+
+describe('getPlaceByIdService', () => {
+  jest.mock('../../src/repositories/placeRepository', () => ({
+    getPlaceById: jest.fn(),
+  }));
+
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { getPlaceById } = require('../../src/repositories/placeRepository');
+
+  const placeResult = {
+    id: 'place-1',
+    name: 'Sushi Sakura',
+    description: null,
+    address: 'Rua das Flores, 100',
+    city: 'São Paulo',
+    lat: -23.5505,
+    lng: -46.6333,
+    distanceMeters: 0,
+    category: { slug: 'restaurante', label: 'Restaurante' },
+    acceptsPets: false,
+    acceptsCards: true,
+    hasParking: false,
+    phone: null,
+    website: null,
+    whatsappNumber: null,
+    menuUrl: null,
+    photoUrls: [],
+    isOpenNow: null,
+    isFeatured: false,
+  };
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('retorna o place quando o repository encontra o id', async () => {
+    getPlaceById.mockResolvedValue(placeResult);
+
+    const { getPlaceByIdService } = require('../../src/services/placeService');
+    const result = await getPlaceByIdService('place-1');
+
+    expect(getPlaceById).toHaveBeenCalledWith('place-1');
+    expect(result).toEqual(placeResult);
+  });
+
+  it('retorna null quando o repository não encontra o id', async () => {
+    getPlaceById.mockResolvedValue(null);
+
+    const { getPlaceByIdService } = require('../../src/services/placeService');
+    const result = await getPlaceByIdService('não-existe');
+
+    expect(result).toBeNull();
+  });
+});

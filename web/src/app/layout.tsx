@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NavBar } from "@/components/nav-bar";
 import { SiteFooter } from "@/components/site-footer";
 import { GoogleAdsTag } from "@/components/google-ads-tag";
+import { AnalyticsTag } from "@/components/analytics-tag";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { FavoritesProvider } from "@/lib/favorites/favorites-context";
 import { PlaceCacheProvider } from "@/lib/place-cache";
@@ -18,10 +19,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
-  title: "ask.me — encontre lugares perto de você",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    template: "%s | ask.me",
+    default: "ask.me — encontre lugares perto de você",
+  },
   description:
     "Busque estabelecimentos por proximidade ou pergunte em linguagem natural.",
+  openGraph: {
+    siteName: "ask.me",
+    type: "website",
+    locale: "pt_BR",
+    title: "ask.me — encontre lugares perto de você",
+    description:
+      "Busque estabelecimentos por proximidade ou pergunte em linguagem natural.",
+  },
+  twitter: {
+    card: "summary",
+    title: "ask.me — encontre lugares perto de você",
+    description:
+      "Busque estabelecimentos por proximidade ou pergunte em linguagem natural.",
+  },
 };
 
 // Site é light-only — evita que o navegador force dark mode/inversão de
@@ -42,6 +63,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <GoogleAdsTag />
+        <AnalyticsTag />
         <AuthProvider>
           <FavoritesProvider>
             <PlaceCacheProvider>
