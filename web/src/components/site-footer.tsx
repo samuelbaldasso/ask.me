@@ -12,15 +12,19 @@ export function SiteFooter() {
             Termos de uso
           </a>
           <span>·</span>
-          <a
-            href="mailto:baldassosamuel93@gmail.com"
-            className="transition hover:text-foreground/80"
-          >
-            Suporte
-          </a>
+          <span>
+            Email de contato:{" "}
+            <a
+              href="mailto:baldassosamuel93@gmail.com"
+              className="transition hover:text-foreground/80"
+            >
+              baldassosamuel93@gmail.com
+            </a>
+          </span>
           <span>·</span>
           <span>© {new Date().getFullYear()} ask.me</span>
         </div>
+        <span>Operado em Macaé, Rio de Janeiro - Brasil</span>
       </div>
     </footer>
   );
