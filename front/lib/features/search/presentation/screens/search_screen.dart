@@ -8,8 +8,6 @@ import '../../../account/presentation/widgets/profile_drawer.dart';
 import '../../../ai_search/presentation/screens/ai_search_screen.dart';
 import '../../../favorites/presentation/state/favorites_view_model.dart';
 import '../../../place_detail/presentation/screens/place_detail_screen.dart';
-import '../../../subscription/presentation/screens/subscription_screen.dart';
-import '../../../subscription/presentation/state/subscription_view_model.dart';
 import '../state/search_view_model.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/place_card.dart';
@@ -38,11 +36,10 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _openAiSearch() {
     final auth = context.read<AuthViewModel>();
-    final subscription = context.read<SubscriptionViewModel>();
 
-    if (!auth.isAuthenticated || !subscription.isActive) {
+    if (!auth.isAuthenticated) {
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
       return;
     }

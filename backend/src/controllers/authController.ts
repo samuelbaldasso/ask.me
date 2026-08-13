@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { googleLoginSchema, loginWithGoogle } from '../services/authService';
+import { googleLoginSchema, loginWithGoogle, getCurrentUser } from '../services/authService';
 
 export async function googleLoginController(
   req: Request,
@@ -21,6 +21,19 @@ export async function googleLoginController(
     const result = await loginWithGoogle(parsed.data.idToken);
 
     res.status(StatusCodes.OK).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMeController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const user = await getCurrentUser(req.user!.sub);
+    res.status(StatusCodes.OK).json({ user });
   } catch (err) {
     next(err);
   }

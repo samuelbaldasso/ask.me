@@ -46,7 +46,23 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     _apiClient.authToken = storedToken;
-    status = AuthStatus.authenticated;
+
+    try {
+      user = await _authRepository.fetchCurrentUser();
+      status = AuthStatus.authenticated;
+    } on ApiException {
+      // Token salvo é inválido/expirado — trata como deslogado.
+      await _secureStorage.delete(key: _tokenStorageKey);
+      _apiClient.authToken = null;
+      user = null;
+      status = AuthStatus.unauthenticated;
+    } catch (e, stack) {
+      debugPrint('[AuthViewModel] restoreSession failed: $e\n$stack');
+      _apiClient.authToken = null;
+      user = null;
+      status = AuthStatus.unauthenticated;
+    }
+
     notifyListeners();
   }
 

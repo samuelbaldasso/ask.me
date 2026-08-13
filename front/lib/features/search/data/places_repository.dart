@@ -26,4 +26,14 @@ class PlacesRepository {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// Registra um evento de interação com o estabelecimento (visualização ou
+  /// clique). Nunca deve bloquear a navegação do usuário se falhar.
+  Future<void> trackEvent(String placeId, String type) async {
+    try {
+      await _apiClient.dio.post('/places/$placeId/track', data: {'type': type});
+    } on DioException {
+      // Silenciosamente ignorado — analytics não pode travar a UI.
+    }
+  }
 }

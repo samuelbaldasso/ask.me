@@ -7,14 +7,16 @@ import 'core/services/location_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/account/data/auth_repository.dart';
 import 'features/account/presentation/state/auth_view_model.dart';
+import 'features/admin/data/admin_repository.dart';
+import 'features/admin/presentation/state/admin_view_model.dart';
 import 'features/ai_search/data/ask_repository.dart';
 import 'features/ai_search/presentation/state/ai_search_view_model.dart';
+import 'features/business/data/business_repository.dart';
+import 'features/business/presentation/state/business_view_model.dart';
 import 'features/favorites/data/favorites_repository.dart';
 import 'features/favorites/presentation/state/favorites_view_model.dart';
 import 'features/search/data/places_repository.dart';
 import 'features/search/presentation/state/search_view_model.dart';
-import 'features/subscription/data/subscription_repository.dart';
-import 'features/subscription/presentation/state/subscription_view_model.dart';
 
 void main() {
   runApp(const AskMeApp());
@@ -61,20 +63,26 @@ class AskMeApp extends StatelessWidget {
           update: (context, repository, previous) =>
               previous ?? AuthViewModel(repository, context.read<ApiClient>()),
         ),
-        ProxyProvider<ApiClient, SubscriptionRepository>(
-          update: (_, apiClient, _) => SubscriptionRepository(apiClient),
-        ),
-        ChangeNotifierProxyProvider<SubscriptionRepository, SubscriptionViewModel>(
-          create: (context) => SubscriptionViewModel(context.read<SubscriptionRepository>()),
-          update: (context, repository, previous) =>
-              previous ?? SubscriptionViewModel(repository),
-        ),
         ProxyProvider<ApiClient, FavoritesRepository>(
           update: (_, apiClient, _) => FavoritesRepository(apiClient),
         ),
         ChangeNotifierProxyProvider<FavoritesRepository, FavoritesViewModel>(
           create: (context) => FavoritesViewModel(context.read<FavoritesRepository>()),
           update: (context, repository, previous) => previous ?? FavoritesViewModel(repository),
+        ),
+        ProxyProvider<ApiClient, BusinessRepository>(
+          update: (_, apiClient, _) => BusinessRepository(apiClient),
+        ),
+        ChangeNotifierProxyProvider<BusinessRepository, BusinessViewModel>(
+          create: (context) => BusinessViewModel(context.read<BusinessRepository>()),
+          update: (context, repository, previous) => previous ?? BusinessViewModel(repository),
+        ),
+        ProxyProvider<ApiClient, AdminRepository>(
+          update: (_, apiClient, _) => AdminRepository(apiClient),
+        ),
+        ChangeNotifierProxyProvider<AdminRepository, AdminViewModel>(
+          create: (context) => AdminViewModel(context.read<AdminRepository>()),
+          update: (context, repository, previous) => previous ?? AdminViewModel(repository),
         ),
       ],
       child: MaterialApp(

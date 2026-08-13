@@ -120,4 +120,30 @@ export async function loginWithGoogle(idToken: string): Promise<AuthResult> {
   };
 }
 
+export interface CurrentUser {
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+  isAdmin: boolean;
+}
+
+/**
+ * Usado por GET /auth/me para reidratar o usuário logado a partir do JWT
+ * salvo localmente (ex: app reaberto após o login) — sem isso, o front não
+ * tem como saber nome/avatar/isAdmin de uma sessão restaurada só com o token.
+ */
+export async function getCurrentUser(userId: string): Promise<CurrentUser> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, name: true, avatarUrl: true, isAdmin: true },
+  });
+
+  if (!user) {
+    throw new AuthServiceError('Usuário não encontrado', 404);
+  }
+
+  return user;
+}
+
 export { AuthServiceError };

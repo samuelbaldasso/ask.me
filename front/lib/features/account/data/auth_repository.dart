@@ -26,4 +26,16 @@ class AuthRepository {
       throw ApiException.fromDioError(e);
     }
   }
+
+  /// Busca os dados do usuário logado a partir do JWT salvo — usado para
+  /// reidratar a sessão quando o app reabre (ver AuthViewModel.restoreSession).
+  Future<AppUser> fetchCurrentUser() async {
+    try {
+      final response = await _apiClient.dio.get('/auth/me');
+      final data = response.data as Map<String, dynamic>;
+      return AppUser.fromJson(data['user'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 }

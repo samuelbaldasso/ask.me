@@ -1,11 +1,14 @@
 class ApiException implements Exception {
   final String message;
+  final int? statusCode;
 
-  const ApiException(this.message);
+  const ApiException(this.message, {this.statusCode});
 
   factory ApiException.fromDioError(dynamic error) {
-    return const ApiException(
+    final statusCode = error?.response?.statusCode as int?;
+    return ApiException(
       'Não foi possível carregar os resultados. Verifique sua conexão e tente novamente.',
+      statusCode: statusCode,
     );
   }
 

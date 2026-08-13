@@ -15,7 +15,11 @@ class Place {
   final bool hasParking;
   final String? phone;
   final String? website;
+  final String? whatsappNumber;
+  final String? menuUrl;
+  final List<String> photoUrls;
   final bool? isOpenNow;
+  final bool isFeatured;
 
   const Place({
     required this.id,
@@ -32,7 +36,11 @@ class Place {
     required this.hasParking,
     required this.phone,
     required this.website,
+    this.whatsappNumber,
+    this.menuUrl,
+    this.photoUrls = const [],
     required this.isOpenNow,
+    this.isFeatured = false,
   });
 
   factory Place.fromJson(Map<String, dynamic> json) {
@@ -51,7 +59,13 @@ class Place {
       hasParking: json['hasParking'] as bool,
       phone: json['phone'] as String?,
       website: json['website'] as String?,
+      whatsappNumber: json['whatsappNumber'] as String?,
+      menuUrl: json['menuUrl'] as String?,
+      photoUrls: (json['photoUrls'] as List<dynamic>? ?? [])
+          .map((e) => e as String)
+          .toList(),
       isOpenNow: json['isOpenNow'] as bool?,
+      isFeatured: json['isFeatured'] as bool? ?? false,
     );
   }
 

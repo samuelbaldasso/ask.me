@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_theme.dart';
+import '../../../admin/presentation/screens/admin_screen.dart';
+import '../../../business/presentation/screens/dashboard_screen.dart';
 import '../../../favorites/presentation/screens/favorites_screen.dart';
-import '../../../subscription/presentation/screens/subscription_screen.dart';
 import '../screens/login_screen.dart';
 import '../state/auth_view_model.dart';
 
 /// Drawer de perfil, acessível a partir da SearchScreen. Login é opcional no
-/// app (só é exigido pelas telas de assinatura/favoritos quando o usuário
-/// tenta usá-las) — por isso o drawer também funciona para quem não está
-/// logado, oferecendo "Entrar" em vez de "Sair".
+/// app (só é exigido por features como busca por IA/favoritos quando o
+/// usuário tenta usá-las) — por isso o drawer também funciona para quem não
+/// está logado, oferecendo "Entrar" em vez de "Sair". O item "Admin" só
+/// aparece para o usuário com isAdmin = true.
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
 
@@ -76,16 +78,30 @@ class ProfileDrawer extends StatelessWidget {
                 Navigator.of(context).push(MaterialPageRoute(builder: (_) => destination));
               },
             ),
+            const Divider(),
             ListTile(
-              leading: const Icon(Icons.workspace_premium_rounded, color: AppColors.primary),
-              title: const Text('Gerenciar assinatura'),
+              leading: const Icon(Icons.storefront_rounded, color: AppColors.primary),
+              title: const Text('Painel do lojista'),
+              subtitle: const Text('Para empresas', style: TextStyle(fontSize: 11)),
               onTap: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-                );
+                final destination = auth.isAuthenticated
+                    ? const DashboardScreen()
+                    : const LoginScreen();
+                Navigator.of(context).push(MaterialPageRoute(builder: (_) => destination));
               },
             ),
+            if (user?.isAdmin ?? false)
+              ListTile(
+                leading: const Icon(Icons.admin_panel_settings_rounded, color: AppColors.primary),
+                title: const Text('Admin'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminScreen()),
+                  );
+                },
+              ),
             const Spacer(),
             const Divider(),
             ListTile(

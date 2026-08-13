@@ -7,11 +7,32 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../account/presentation/screens/login_screen.dart';
 import '../../../account/presentation/state/auth_view_model.dart';
 import '../../../favorites/presentation/state/favorites_view_model.dart';
+import '../../../search/data/places_repository.dart';
 
-class PlaceDetailScreen extends StatelessWidget {
+class PlaceDetailScreen extends StatefulWidget {
   final Place place;
 
   const PlaceDetailScreen({super.key, required this.place});
+
+  @override
+  State<PlaceDetailScreen> createState() => _PlaceDetailScreenState();
+}
+
+class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
+  Place get place => widget.place;
+
+  @override
+  void initState() {
+    super.initState();
+    // Base do relatório de estatísticas do lojista; nunca deve travar a UI.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<PlacesRepository>().trackEvent(place.id, 'view');
+    });
+  }
+
+  void _track(String type) {
+    context.read<PlacesRepository>().trackEvent(place.id, type);
+  }
 
   void _toggleFavorite(BuildContext context) {
     if (!context.read<AuthViewModel>().isAuthenticated) {
@@ -30,6 +51,7 @@ class PlaceDetailScreen extends StatelessWidget {
     final isOpen = place.isOpenNow;
     final categoryStyle = CategoryStyle.forSlug(place.category.slug);
     final isFavorite = context.watch<FavoritesViewModel>().isFavorite(place.id);
+    final whatsappNumber = place.whatsappNumber ?? place.phone;
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -79,7 +101,15 @@ class PlaceDetailScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(place.name, style: theme.textTheme.headlineSmall),
+                  Row(
+                    children: [
+                      if (place.isFeatured) ...[
+                        const Text('👑', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 6),
+                      ],
+                      Expanded(child: Text(place.name, style: theme.textTheme.headlineSmall)),
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   if (isOpen != null)
                     Container(
@@ -113,6 +143,67 @@ class PlaceDetailScreen extends StatelessWidget {
                     Text(place.description!, style: theme.textTheme.bodyMedium),
                     const SizedBox(height: 18),
                   ],
+                  if (place.photoUrls.isNotEmpty) ...[
+                    SizedBox(
+                      height: 160,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: place.photoUrls.length,
+                        separatorBuilder: (_, _) => const SizedBox(width: 12),
+                        itemBuilder: (context, index) => ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.network(
+                            place.photoUrls[index],
+                            width: 220,
+                            height: 160,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => Container(
+                              width: 220,
+                              height: 160,
+                              color: const Color(0xFFF1EBFF),
+                              child: const Icon(Icons.image_not_supported_rounded, color: AppColors.primary),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                  ],
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _ActionButton(
+                        icon: Icons.navigation_rounded,
+                        label: 'Ver rota',
+                        onTap: () {
+                          _track('route_click');
+                          _openUrl(
+                            'https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}',
+                          );
+                        },
+                      ),
+                      if (whatsappNumber != null)
+                        _ActionButton(
+                          icon: Icons.chat_rounded,
+                          label: 'WhatsApp',
+                          onTap: () {
+                            _track('whatsapp_click');
+                            _openUrl('https://wa.me/${whatsappNumber.replaceAll(RegExp(r'\D'), '')}');
+                          },
+                        ),
+                      if (place.menuUrl != null)
+                        _ActionButton(
+                          icon: Icons.menu_book_rounded,
+                          label: 'Ver cardápio',
+                          onTap: () {
+                            _track('menu_click');
+                            _openUrl(place.menuUrl!);
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     decoration: BoxDecoration(
@@ -134,13 +225,19 @@ class PlaceDetailScreen extends StatelessWidget {
                           _InfoRow(
                             icon: Icons.phone_rounded,
                             text: place.phone!,
-                            onTap: () => _call(place.phone!),
+                            onTap: () {
+                              _track('phone_click');
+                              _call(place.phone!);
+                            },
                           ),
                         if (place.website != null)
                           _InfoRow(
                             icon: Icons.language_rounded,
                             text: place.website!,
-                            onTap: () => _openUrl(place.website!),
+                            onTap: () {
+                              _track('website_click');
+                              _openUrl(place.website!);
+                            },
                             isLast: true,
                           ),
                       ],
@@ -180,6 +277,37 @@ class PlaceDetailScreen extends StatelessWidget {
     if (uri != null && await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  const _ActionButton({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(24),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+          ],
+        ),
+      ),
+    );
   }
 }
 

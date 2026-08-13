@@ -1,5 +1,6 @@
 import { Router, IRouter } from 'express';
-import { googleLoginController } from '../controllers/authController';
+import { googleLoginController, getMeController } from '../controllers/authController';
+import { authenticate } from '../middleware/auth';
 
 const router: IRouter = Router();
 
@@ -11,5 +12,14 @@ const router: IRouter = Router();
  * JWT próprio da aplicação (usado nas rotas autenticadas, ex: assinatura).
  */
 router.post('/google', googleLoginController);
+
+/**
+ * GET /auth/me
+ *
+ * Retorna os dados do usuário logado (id, email, nome, avatar, isAdmin) a
+ * partir do JWT enviado no header Authorization. Usado para reidratar a
+ * sessão quando o app reabre com um token salvo (ver AuthViewModel.restoreSession).
+ */
+router.get('/me', authenticate, getMeController);
 
 export default router;

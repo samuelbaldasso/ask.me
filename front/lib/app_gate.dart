@@ -5,10 +5,10 @@ import 'core/theme/app_theme.dart';
 import 'features/account/presentation/state/auth_view_model.dart';
 import 'features/search/presentation/screens/search_screen.dart';
 
-/// Porta de entrada do app. Login e assinatura são opcionais para navegar e
-/// buscar (Fase 1/2) — só são exigidos sob demanda pelas features que
-/// dependem deles (IA e favoritos exigem login; IA também exige assinatura
-/// ativa). Isso evita bloquear a pré-visualização do app antes de assinar.
+/// Porta de entrada do app. Login é opcional para navegar e buscar — só é
+/// exigido sob demanda pelas features que dependem dele (busca por IA e
+/// favoritos exigem login; não há paywall no lado consumidor, a única
+/// assinatura paga do app é o plano B2B do lojista).
 class AppGate extends StatelessWidget {
   const AppGate({super.key});
 
