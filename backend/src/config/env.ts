@@ -27,15 +27,19 @@ const envSchema = z.object({
   // (ex: askme://subscription/success) via variável de ambiente própria.
   STRIPE_CHECKOUT_SUCCESS_URL: z
     .string()
-    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
+    .default('https://www.ask-me.company/subscription'),
   STRIPE_CHECKOUT_CANCEL_URL: z
     .string()
-    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
+    .default('https://www.ask-me.company/subscription'),
   // Para onde o Stripe Billing Portal (gerenciar/cancelar assinatura) retorna
   // o usuário depois que ele fecha o portal.
   STRIPE_BILLING_PORTAL_RETURN_URL: z
     .string()
-    .default('https://web-nu-cyan-rcmyrnwiip.vercel.app/subscription'),
+    .default('https://www.ask-me.company/subscription'),
+
+  // Origem permitida no CORS da API (o site web em produção). Em dev, cai
+  // para localhost para não quebrar o front rodando local.
+  ALLOWED_ORIGIN: z.string().default('http://localhost:3000'),
 });
 
 const parsed = envSchema.safeParse(process.env);

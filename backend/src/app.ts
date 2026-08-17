@@ -16,7 +16,9 @@ app.set('trust proxy', 1);
 
 // ── Segurança e parsing ───────────────────────────────────────────────────────
 app.use(helmet());
-app.use(cors());
+// Restrito à origem do site web — a auth é via JWT no header Authorization
+// (não cookie), então apps mobile/nativos não passam por CORS de qualquer forma.
+app.use(cors({ origin: env.ALLOWED_ORIGIN }));
 
 // Webhook da Stripe precisa do corpo bruto (raw) para validar a assinatura
 // HMAC — deve ser registrado ANTES do express.json() global, que já teria
