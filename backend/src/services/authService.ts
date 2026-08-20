@@ -56,11 +56,18 @@ async function verifyGoogleIdToken(idToken: string) {
     throw new AuthServiceError('Login com Google não está configurado no servidor', 503);
   }
 
+  // O idToken tem como audience o client que originou o sign-in — no iOS
+  // é o GOOGLE_IOS_CLIENT_ID, não o serverClientId (GOOGLE_CLIENT_ID) usado
+  // no Android/Web. Aceita qualquer um dos clients configurados.
+  const audience = [env.GOOGLE_CLIENT_ID, env.GOOGLE_IOS_CLIENT_ID].filter(
+    (id): id is string => Boolean(id),
+  );
+
   let ticket;
   try {
     ticket = await client.verifyIdToken({
       idToken,
-      audience: env.GOOGLE_CLIENT_ID,
+      audience,
     });
   } catch {
     throw new AuthServiceError('Token do Google inválido ou expirado', 401);

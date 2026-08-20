@@ -14,8 +14,13 @@ const envSchema = z.object({
   GOOGLE_PLACES_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
 
-  // Auth social (Google Sign-In) — Fase de monetização
+  // Auth social (Google Sign-In) — Fase de monetização.
+  // GOOGLE_CLIENT_ID é o Web Client ID (usado como serverClientId no app,
+  // audience padrão). GOOGLE_IOS_CLIENT_ID é o Client ID do tipo iOS — o
+  // idToken emitido pelo GoogleSignIn no iOS tem esse client como audience
+  // (não o serverClientId), então o backend precisa aceitar ambos.
   GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_IOS_CLIENT_ID: z.string().optional(),
 
   // Stripe (assinatura mensal, cartão de crédito)
   STRIPE_SECRET_KEY: z.string().optional(),
