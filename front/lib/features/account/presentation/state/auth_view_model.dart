@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -86,6 +88,13 @@ class AuthViewModel extends ChangeNotifier {
 
       if (idToken == null) {
         throw const ApiException('Não foi possível obter o token do Google.');
+      }
+
+      final parts = idToken.split('.');
+      if (parts.length == 3) {
+        final normalized = base64Url.normalize(parts[1]);
+        final payload = utf8.decode(base64Url.decode(normalized));
+        debugPrint('[AuthViewModel] idToken payload: $payload');
       }
 
       final result = await _authRepository.loginWithGoogle(idToken);
