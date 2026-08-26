@@ -24,6 +24,19 @@ export function PlaceDetailView({ place }: { place: Place }) {
     ? `https://wa.me/${whatsappNumber.replace(/\D/g, '')}`
     : null;
 
+  // Defesa em profundidade: só renderiza como link se for http(s) — o backend
+  // já valida isso na escrita, mas isso protege contra dado legado/injetado
+  // por outra via virar um `javascript:`/`data:` href clicável.
+  const isSafeHttpUrl = (url: string) => {
+    try {
+      return ['http:', 'https:'].includes(new URL(url).protocol);
+    } catch {
+      return false;
+    }
+  };
+  const safeWebsite = place.website && isSafeHttpUrl(place.website) ? place.website : null;
+  const safeMenuUrl = place.menuUrl && isSafeHttpUrl(place.menuUrl) ? place.menuUrl : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-4 rounded-[28px] bg-gradient-to-br from-primary to-[#ec4899] p-8 text-white">
@@ -90,11 +103,11 @@ export function PlaceDetailView({ place }: { place: Place }) {
             onClick={() => trackPlaceEvent(id, 'whatsapp_click').catch(() => {})}
           />
         )}
-        {place.menuUrl && (
+        {safeMenuUrl && (
           <ActionButton
             icon="📋"
             label="Ver cardápio"
-            href={place.menuUrl}
+            href={safeMenuUrl}
             onClick={() => trackPlaceEvent(id, 'menu_click').catch(() => {})}
           />
         )}
@@ -113,11 +126,11 @@ export function PlaceDetailView({ place }: { place: Place }) {
             onClick={() => trackPlaceEvent(id, 'phone_click').catch(() => {})}
           />
         )}
-        {place.website && (
+        {safeWebsite && (
           <InfoRow
             icon="🌐"
-            text={place.website}
-            href={place.website}
+            text={safeWebsite}
+            href={safeWebsite}
             external
             onClick={() => trackPlaceEvent(id, 'website_click').catch(() => {})}
           />

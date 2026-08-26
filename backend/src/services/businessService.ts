@@ -18,13 +18,30 @@ export const claimBodySchema = z.object({
   placeId: z.string().min(1),
 });
 
+// Só aceita http(s) — impede que um lojista malicioso grave uma URL
+// `javascript:`/`data:` que seria renderizada como href/src no perfil e
+// executaria no navegador de qualquer visitante que clicasse (stored XSS).
+const httpUrlSchema = z
+  .string()
+  .max(500)
+  .refine(
+    (value) => {
+      try {
+        return ['http:', 'https:'].includes(new URL(value).protocol);
+      } catch {
+        return false;
+      }
+    },
+    { message: 'Deve ser uma URL http(s) válida' },
+  );
+
 export const updatePlaceBodySchema = z.object({
   description: z.string().max(1000).nullable().optional(),
   phone: z.string().max(30).nullable().optional(),
-  website: z.string().max(255).nullable().optional(),
+  website: httpUrlSchema.nullable().optional(),
   whatsappNumber: z.string().max(30).nullable().optional(),
-  menuUrl: z.string().max(255).nullable().optional(),
-  photoUrls: z.array(z.string().max(500)).max(6).optional(),
+  menuUrl: httpUrlSchema.nullable().optional(),
+  photoUrls: z.array(httpUrlSchema).max(6).optional(),
   acceptsPets: z.boolean().optional(),
   acceptsCards: z.boolean().optional(),
   hasParking: z.boolean().optional(),

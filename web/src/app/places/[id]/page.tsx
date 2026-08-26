@@ -101,7 +101,9 @@ export default async function PlaceDetailPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        // Escapa "<" para impedir que texto controlado pelo lojista (nome/descrição)
+        // feche a tag <script> prematuramente e injete HTML/JS.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
       <PlaceDetailView place={place} />
     </>

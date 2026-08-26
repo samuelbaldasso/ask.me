@@ -4,6 +4,10 @@ export function SiteFooter() {
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-1.5 px-4 py-6 text-center text-xs text-foreground/50 sm:px-6">
         <span className="text-sm font-bold text-foreground/70">ask.me</span>
         <div className="flex flex-wrap items-center justify-center gap-x-2">
+          <a href="/how-to-use.html" className="transition hover:text-foreground/80">
+            Como usar
+          </a>
+          <span>·</span>
           <a href="/privacy-policy.html" className="transition hover:text-foreground/80">
             Política de privacidade
           </a>
